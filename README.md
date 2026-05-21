@@ -136,4 +136,5 @@ scripts/
 - **Sketch plane picker**: feature se vloží s prázdnou query, Onshape ji otevře v error stavu s dialogem — uživatel vybere plane nativně. Lepší UX (preselect z graphics area přes `SELECTION` postMessage) je v1.1.
 - **Velký text**: payload nad ~80 KB zpomalí Onshape regen. Panel zobrazí warning. Pro >200 znaků v komplexních fontech zvaž splittění do více feature instancí (v1.1).
 - **Font fallback**: Local Font Access API jen Chrome/Edge. Safari/Firefox → upload `.ttf`/`.otf`.
+- **Nestandardní OTF fonty**: některé designové OTF (např. PPSupplySans) mají overlapping subpaths nebo CFF výstup, který opentype.js neparsuje 1:1 — v Onshape sketchi pak chybí některé segmenty (např. crossbar u "H"). Workaround: použít TTF nebo Google Fonts (~1900 rodin) — ty fungují čistě.
 - **Namespace formát** v add-feature requestu (`d::v::e`) je nedokumentovaný. Pokud první POST vrátí 400, ručně přidej feature v Onshape UI a `GET /features` vyplivne správný namespace — uprav `lib/onshape.ts`.
