@@ -208,7 +208,7 @@ export async function addTextToSketchFeature(
     name?: string;
     sketchPlaneQueries?: unknown[];
   },
-): Promise<unknown> {
+): Promise<{ result: unknown; namespace: string; debugBody: unknown }> {
   const env = getEnv();
   const { fsElementId, microversionId } = await resolvePublishedFsRef(userId);
   const namespace = `e${fsElementId}::m${microversionId}`;
@@ -241,12 +241,25 @@ export async function addTextToSketchFeature(
     },
   };
 
-  return await onshapeFetch(
-    userId,
-    `/api/v9/partstudios/d/${ref.documentId}/w/${ref.workspaceId}/e/${ref.elementId}/features`,
-    {
-      method: "POST",
-      body: JSON.stringify(body),
-    },
-  );
+  try {
+    const result = await onshapeFetch(
+      userId,
+      `/api/v9/partstudios/d/${ref.documentId}/w/${ref.workspaceId}/e/${ref.elementId}/features`,
+      {
+        method: "POST",
+        body: JSON.stringify(body),
+      },
+    );
+    return { result, namespace, debugBody: body };
+  } catch (e) {
+    if (e instanceof OnshapeApiError) {
+      // Re-wrap so the calling route can show the body that was sent.
+      throw new OnshapeApiError(e.status, {
+        onshapeError: e.body,
+        debugSentBody: body,
+        debugNamespace: namespace,
+      });
+    }
+    throw e;
+  }
 }
