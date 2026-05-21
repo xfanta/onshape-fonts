@@ -305,28 +305,7 @@ function PanelInner() {
 
   if (!onshape) {
     const rawParams = Array.from(searchParams.entries());
-    return (
-      <main className="bg-white p-4 text-sm text-gray-900">
-        <p className="mb-2 font-medium">Tato stránka se otevírá uvnitř Onshape jako Element Panel.</p>
-        <p className="text-gray-600">
-          Pokud testuješ standalone, použij <a className="underline" href="/preview">/preview</a>.
-        </p>
-        <div className="mt-4 rounded bg-gray-100 p-3 text-xs">
-          <p className="mb-1 font-medium">Debug — query parametry, které panel viděl:</p>
-          {rawParams.length === 0 ? (
-            <p className="text-gray-500">žádné parametry v URL</p>
-          ) : (
-            <ul className="font-mono">
-              {rawParams.map(([k, v]) => (
-                <li key={k}>
-                  <strong>{k}</strong> = {v}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </main>
-    );
+    return <DebugView rawParams={rawParams} />;
   }
 
   if (onshape.workspaceOrVersion !== "w") {
@@ -556,6 +535,102 @@ function PanelInner() {
           {error}
         </div>
       )}
+    </main>
+  );
+}
+
+function DebugView({ rawParams }: { rawParams: [string, string][] }) {
+  const [messages, setMessages] = useState<
+    { ts: number; origin: string; data: unknown }[]
+  >([]);
+  const [probeStatus, setProbeStatus] = useState<string>("");
+
+  useEffect(() => {
+    function onMsg(e: MessageEvent) {
+      setMessages((prev) => [
+        ...prev,
+        { ts: Date.now(), origin: e.origin, data: e.data },
+      ]);
+    }
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+
+  const probe = useCallback(() => {
+    const tries = [
+      { documentMessage: true, messageName: "iframeReady" },
+      { documentMessage: true, messageName: "subscribeMessage", messageType: "documentMessage" },
+      { documentMessage: true, messageName: "subscribeMessage", messageType: "selectionMessage" },
+      { documentMessage: true, messageName: "getDocumentInfo" },
+      { documentMessage: true, messageName: "queryDocumentInfo" },
+      { messageName: "iframeReady" },
+    ];
+    let sent = 0;
+    for (const m of tries) {
+      try {
+        window.parent.postMessage(m, "*");
+        sent += 1;
+      } catch {
+        /* ignore */
+      }
+    }
+    setProbeStatus(`Posláno ${sent} probe zpráv → čekám na odpovědi…`);
+  }, []);
+
+  return (
+    <main className="bg-white p-4 text-sm text-gray-900">
+      <p className="mb-2 font-medium">Tato stránka se otevírá uvnitř Onshape jako Element Panel.</p>
+      <p className="text-gray-600">
+        Pokud testuješ standalone, použij <a className="underline" href="/preview">/preview</a>.
+      </p>
+      <div className="mt-4 rounded bg-gray-100 p-3 text-xs">
+        <p className="mb-1 font-medium">Debug — query parametry, které panel viděl:</p>
+        {rawParams.length === 0 ? (
+          <p className="text-gray-500">žádné parametry v URL</p>
+        ) : (
+          <ul className="font-mono">
+            {rawParams.map(([k, v]) => (
+              <li key={k}>
+                <strong>{k}</strong> = {v}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      <div className="mt-3 flex gap-2">
+        <button
+          type="button"
+          onClick={probe}
+          className="rounded bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700"
+        >
+          Probe Onshape postMessage
+        </button>
+        <button
+          type="button"
+          onClick={() => setMessages([])}
+          className="rounded border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50"
+        >
+          Clear
+        </button>
+      </div>
+      {probeStatus && <p className="mt-2 text-xs text-gray-600">{probeStatus}</p>}
+      <div className="mt-3 rounded bg-gray-50 p-3 text-xs">
+        <p className="mb-1 font-medium">Zprávy přijaté z parent okna ({messages.length}):</p>
+        {messages.length === 0 ? (
+          <p className="text-gray-500">žádné zatím — klikni Probe</p>
+        ) : (
+          <ul className="space-y-2 font-mono">
+            {messages.map((m, i) => (
+              <li key={i} className="break-all">
+                <span className="text-gray-500">[{m.origin}]</span>{" "}
+                {typeof m.data === "object"
+                  ? JSON.stringify(m.data)
+                  : String(m.data)}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </main>
   );
 }
