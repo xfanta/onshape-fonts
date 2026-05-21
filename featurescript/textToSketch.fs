@@ -28,14 +28,16 @@ import(path : "onshape/std/geometry.fs", version : "2960.0");
  */
 // Signed translation bounds — Onshape's stock LengthBoundSpec types are
 // either positive-only or "offset" types that still clamp at 0.
+// NOTE: only the first map entry may carry [min, default, max]; the rest
+// must be plain scalars (per-unit default display values).
 export const TEXT_TRANSLATE_BOUNDS =
 {
-    (meter)      : [-500.0,     0.0, 500.0],
-    (centimeter) : [-50000.0,   0.0, 50000.0],
-    (millimeter) : [-500000.0,  0.0, 500000.0],
-    (inch)       : [-20000.0,   0.0, 20000.0],
-    (foot)       : [-1700.0,    0.0, 1700.0],
-    (yard)       : [-550.0,     0.0, 550.0]
+    (meter)      : [-500.0, 0.0, 500.0],
+    (centimeter) : 0.0,
+    (millimeter) : 0.0,
+    (inch)       : 0.0,
+    (foot)       : 0.0,
+    (yard)       : 0.0
 } as LengthBoundSpec;
 
 annotation { "Feature Type Name" : "Text to Sketch" }
