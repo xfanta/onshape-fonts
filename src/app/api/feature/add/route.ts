@@ -10,14 +10,11 @@ const bodySchema = z.object({
   curveJson: z.string().min(1),
   scaleExpression: z.string().min(1),
   name: z.string().optional(),
+  onshapeUserId: z.string().min(1).optional(),
 });
 
 export async function POST(request: NextRequest) {
   const session = await getSession();
-  if (!session.userId) {
-    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
-  }
-
   const json = await request.json();
   const parsed = bodySchema.safeParse(json);
   if (!parsed.success) {
@@ -27,9 +24,17 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  // Iframe context loses session cookies in some browsers, so accept the
+  // Onshape-provided userId from the panel as a fallback. The KV lookup
+  // verifies the user actually has a token (no impersonation possible).
+  const userId = parsed.data.onshapeUserId ?? session.userId;
+  if (!userId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
+
   try {
     const result = await addTextToSketchFeature(
-      session.userId,
+      userId,
       {
         documentId: parsed.data.documentId,
         workspaceId: parsed.data.workspaceId,

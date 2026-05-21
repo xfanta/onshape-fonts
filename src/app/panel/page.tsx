@@ -82,12 +82,16 @@ function PanelInner() {
   const [fontApiSupported, setFontApiSupported] = useState<boolean | null>(
     null,
   );
+  const [inIframe, setInIframe] = useState(false);
   const fontCacheRef = useRef<Map<string, Font>>(new Map());
 
   const refreshAuth = useCallback(async () => {
     setAuthChecking(true);
     try {
-      const res = await fetch("/api/oauth/status", { cache: "no-store" });
+      const url = new URL("/api/oauth/status", window.location.origin);
+      const uid = onshape?.userId;
+      if (uid) url.searchParams.set("userId", uid);
+      const res = await fetch(url.toString(), { cache: "no-store" });
       const json = await res.json();
       setAuthenticated(!!json.authenticated);
     } catch {
@@ -95,11 +99,17 @@ function PanelInner() {
     } finally {
       setAuthChecking(false);
     }
-  }, []);
+  }, [onshape?.userId]);
 
   useEffect(() => {
+    const isIframe = typeof window !== "undefined" && window.parent !== window;
+    setInIframe(isIframe);
+    // queryLocalFonts is blocked by Onshape's iframe Permissions-Policy
+    // (no allow="local-fonts" attribute), so hide the button there.
     setFontApiSupported(
-      typeof window !== "undefined" && typeof window.queryLocalFonts === "function",
+      !isIframe &&
+        typeof window !== "undefined" &&
+        typeof window.queryLocalFonts === "function",
     );
     refreshAuth();
     (async () => {
@@ -285,6 +295,7 @@ function PanelInner() {
           curveJson: JSON.stringify(curves),
           scaleExpression: `${scaleMm} mm`,
           name: `Text "${text.slice(0, 40)}"`,
+          onshapeUserId: onshape.userId ?? undefined,
         }),
       });
       const json = await res.json();
@@ -402,6 +413,12 @@ function PanelInner() {
                 />
               </label>
             </div>
+            {inIframe && (
+              <p className="mt-1 text-xs text-gray-500">
+                Systémové fonty nejdou číst uvnitř Onshape (browser blokuje).
+                Použij Upload nebo Google Fonts.
+              </p>
+            )}
           </div>
 
           {googleEnabled && (
