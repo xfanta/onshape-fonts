@@ -173,12 +173,17 @@ export async function resolvePublishedFsRef(userId: string): Promise<ResolvedFsR
     `/api/v9/documents/d/${env.ONSHAPE_FS_DOCUMENT_ID}/v/${env.ONSHAPE_FS_VERSION_ID}/elements`,
   );
 
-  let chosen = elements.find((e) => e.id === env.ONSHAPE_FS_ELEMENT_ID);
-  if (!chosen) {
-    chosen = elements.find(
-      (e) => e.elementType === "FEATURESTUDIO" || e.elementType === "FeatureStudio",
-    );
-  }
+  const isFs = (e: { elementType: string }) =>
+    e.elementType === "FEATURESTUDIO" || e.elementType === "FeatureStudio";
+
+  // Prefer the env-hinted element only if it's actually a Feature Studio;
+  // otherwise fall back to the first FEATURESTUDIO in the document. This
+  // protects against the common mistake of pasting the Part Studio's URL
+  // elementId into ONSHAPE_FS_ELEMENT_ID.
+  let chosen = elements.find(
+    (e) => e.id === env.ONSHAPE_FS_ELEMENT_ID && isFs(e),
+  );
+  if (!chosen) chosen = elements.find(isFs);
   if (!chosen) {
     throw new Error(
       `Could not find Feature Studio element in document ${env.ONSHAPE_FS_DOCUMENT_ID} v${env.ONSHAPE_FS_VERSION_ID}. Elements: ${JSON.stringify(elements.map((e) => ({ id: e.id, name: e.name, elementType: e.elementType })))}`,
