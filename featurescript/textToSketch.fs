@@ -57,7 +57,7 @@ export const textToSketch = defineFeature(function(context is Context, id is Id,
         annotation { "Name" : "Rotation" }
         isAngle(definition.rotation, ANGLE_360_ZERO_DEFAULT_BOUNDS);
 
-        annotation { "Name" : "Curve data (JSON)", "UIHint" : UIHint.READ_ONLY }
+        annotation { "Name" : "Curve data (JSON)", "UIHint" : UIHint.ALWAYS_HIDDEN }
         definition.curveData is string;
     }
     {
