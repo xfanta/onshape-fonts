@@ -63,6 +63,9 @@ function PanelInner() {
   const [authChecking, setAuthChecking] = useState(false);
   const [text, setText] = useState("Hello");
   const [scaleMm, setScaleMm] = useState(10);
+  const [translateXmm, setTranslateXmm] = useState(0);
+  const [translateYmm, setTranslateYmm] = useState(0);
+  const [rotationDeg, setRotationDeg] = useState(0);
   const [browserFonts, setBrowserFonts] = useState<FontData[]>([]);
   const [uploadedFonts, setUploadedFonts] = useState<
     { key: string; family: string }[]
@@ -294,6 +297,9 @@ function PanelInner() {
           elementId: onshape.elementId,
           curveJson: JSON.stringify(curves),
           scaleExpression: `${scaleMm} mm`,
+          translateXExpression: `${translateXmm} mm`,
+          translateYExpression: `${translateYmm} mm`,
+          rotationExpression: `${rotationDeg} deg`,
           name: `Text "${text.slice(0, 40)}"`,
           onshapeUserId: onshape.userId ?? undefined,
         }),
@@ -312,7 +318,7 @@ function PanelInner() {
     } finally {
       setBusy(false);
     }
-  }, [curves, onshape, scaleMm, text]);
+  }, [curves, onshape, scaleMm, translateXmm, translateYmm, rotationDeg, text]);
 
   if (!onshape) {
     const rawParams = Array.from(searchParams.entries());
@@ -479,17 +485,49 @@ function PanelInner() {
             </div>
           )}
 
-          <label className="block">
-            <span className="text-xs font-medium text-gray-700">Em-height (mm)</span>
-            <input
-              type="number"
-              min={0.1}
-              step={0.5}
-              value={scaleMm}
-              onChange={(e) => setScaleMm(Number(e.target.value) || 0)}
-              className="mt-1 w-32 rounded border border-gray-300 px-2 py-1.5"
-            />
-          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <label className="block">
+              <span className="text-xs font-medium text-gray-700">Em-height (mm)</span>
+              <input
+                type="number"
+                min={0.1}
+                step={0.5}
+                value={scaleMm}
+                onChange={(e) => setScaleMm(Number(e.target.value) || 0)}
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-gray-700">Rotation (°)</span>
+              <input
+                type="number"
+                step={5}
+                value={rotationDeg}
+                onChange={(e) => setRotationDeg(Number(e.target.value) || 0)}
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-gray-700">Translate X (mm)</span>
+              <input
+                type="number"
+                step={1}
+                value={translateXmm}
+                onChange={(e) => setTranslateXmm(Number(e.target.value) || 0)}
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-medium text-gray-700">Translate Y (mm)</span>
+              <input
+                type="number"
+                step={1}
+                value={translateYmm}
+                onChange={(e) => setTranslateYmm(Number(e.target.value) || 0)}
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
+              />
+            </label>
+          </div>
 
           <div className="aspect-square w-full max-w-xs rounded border border-gray-200 bg-white p-2">
             {svg ? (

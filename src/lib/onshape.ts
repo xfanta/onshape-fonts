@@ -210,6 +210,9 @@ export async function addTextToSketchFeature(
   options: {
     curveJson: string;
     scaleExpression: string;
+    translateXExpression?: string;
+    translateYExpression?: string;
+    rotationExpression?: string;
     name?: string;
     sketchPlaneQueries?: unknown[];
   },
@@ -236,6 +239,21 @@ export async function addTextToSketchFeature(
           btType: "BTMParameterQuantity-147",
           parameterId: "scale",
           expression: options.scaleExpression,
+        },
+        {
+          btType: "BTMParameterQuantity-147",
+          parameterId: "translateX",
+          expression: options.translateXExpression ?? "0 mm",
+        },
+        {
+          btType: "BTMParameterQuantity-147",
+          parameterId: "translateY",
+          expression: options.translateYExpression ?? "0 mm",
+        },
+        {
+          btType: "BTMParameterQuantity-147",
+          parameterId: "rotation",
+          expression: options.rotationExpression ?? "0 deg",
         },
         {
           btType: "BTMParameterString-149",
