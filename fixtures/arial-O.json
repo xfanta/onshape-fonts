@@ -10,7 +10,7 @@
       "advance": 0.777832,
       "contours": [
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -164,7 +164,7 @@
           ]
         },
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,

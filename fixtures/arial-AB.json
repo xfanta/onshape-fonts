@@ -10,7 +10,7 @@
       "advance": 0.666992,
       "contours": [
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -71,7 +71,7 @@
           ]
         },
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -139,7 +139,7 @@
       "advance": 0.666992,
       "contours": [
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -314,7 +314,7 @@
           ]
         },
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -427,7 +427,7 @@
           ]
         },
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,

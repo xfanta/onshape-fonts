@@ -84,6 +84,26 @@ function commandsToContours(
   let cx = 0, cy = 0;
   let firstSketchPoint: [number, number] | null = null;
 
+  // OTF/CFF fonts (parsed by opentype.js) often omit the explicit Z command;
+  // the contour is implicitly closed by the rendering engine. We need to
+  // emit the closing line ourselves whenever a contour ends (new M or end
+  // of stream) without arriving back at the start point.
+  const implicitClose = () => {
+    if (current && current.segments.length > 0 && firstSketchPoint) {
+      if (cx !== startX || cy !== startY) {
+        const a = xy(cx, cy);
+        current.segments.push([
+          SEG_LINE,
+          a[0],
+          a[1],
+          firstSketchPoint[0],
+          firstSketchPoint[1],
+        ]);
+      }
+      current.closed = true;
+    }
+  };
+
   const ensure = (): Contour => {
     if (!current) {
       current = { closed: false, segments: [] };
@@ -99,6 +119,8 @@ function commandsToContours(
 
   for (const cmd of commands) {
     if (cmd.type === "M") {
+      // Implicitly close the previous contour (OTF/CFF may not emit Z).
+      implicitClose();
       current = { closed: false, segments: [] };
       contours.push(current);
       [startX, startY] = [cmd.x, cmd.y];
@@ -145,17 +167,13 @@ function commandsToContours(
       if (!firstSketchPoint) firstSketchPoint = a;
       [cx, cy] = [cmd.x, cmd.y];
     } else if (cmd.type === "Z") {
-      if (current && current.segments.length > 0) {
-        if (firstSketchPoint && (cx !== startX || cy !== startY)) {
-          const a = xy(cx, cy);
-          current.segments.push([SEG_LINE, a[0], a[1], firstSketchPoint[0], firstSketchPoint[1]]);
-        }
-        current.closed = true;
-      }
+      implicitClose();
       [cx, cy] = [startX, startY];
       firstSketchPoint = null;
     }
   }
+  // Final contour: implicitly close if the font omitted the trailing Z.
+  implicitClose();
 
   return contours.filter((c) => c.segments.length > 0);
 }

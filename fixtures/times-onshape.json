@@ -10,7 +10,7 @@
       "advance": 0.722168,
       "contours": [
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -138,7 +138,7 @@
           ]
         },
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -286,7 +286,7 @@
       "advance": 0.5,
       "contours": [
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -749,7 +749,7 @@
       "advance": 0.38916,
       "contours": [
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -1214,7 +1214,7 @@
       "advance": 0.5,
       "contours": [
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -1714,7 +1714,7 @@
       "advance": 0.443848,
       "contours": [
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -2188,7 +2188,7 @@
           ]
         },
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -2300,7 +2300,7 @@
       "advance": 0.5,
       "contours": [
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -2657,7 +2657,7 @@
           ]
         },
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -2830,7 +2830,7 @@
       "advance": 0.443848,
       "contours": [
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
@@ -3030,7 +3030,7 @@
           ]
         },
         {
-          "closed": false,
+          "closed": true,
           "segments": [
             [
               0,
