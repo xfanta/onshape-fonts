@@ -26,6 +26,18 @@ import(path : "onshape/std/geometry.fs", version : "2960.0");
  * Coordinates are em-normalized (1 unit = 1 em), Y-up, baseline = y = 0.
  * Multiply by `scale`, rotate, then translate to get sketch coordinates.
  */
+// Signed translation bounds — Onshape's stock LengthBoundSpec types are
+// either positive-only or "offset" types that still clamp at 0.
+export const TEXT_TRANSLATE_BOUNDS =
+{
+    (meter)      : [-500.0,     0.0, 500.0],
+    (centimeter) : [-50000.0,   0.0, 50000.0],
+    (millimeter) : [-500000.0,  0.0, 500000.0],
+    (inch)       : [-20000.0,   0.0, 20000.0],
+    (foot)       : [-1700.0,    0.0, 1700.0],
+    (yard)       : [-550.0,     0.0, 550.0]
+} as LengthBoundSpec;
+
 annotation { "Feature Type Name" : "Text to Sketch" }
 export const textToSketch = defineFeature(function(context is Context, id is Id, definition is map)
     precondition
@@ -37,10 +49,10 @@ export const textToSketch = defineFeature(function(context is Context, id is Id,
         isLength(definition.scale, LENGTH_BOUNDS);
 
         annotation { "Name" : "Translate X" }
-        isLength(definition.translateX, ZERO_INCLUSIVE_OFFSET_BOUNDS);
+        isLength(definition.translateX, TEXT_TRANSLATE_BOUNDS);
 
         annotation { "Name" : "Translate Y" }
-        isLength(definition.translateY, ZERO_INCLUSIVE_OFFSET_BOUNDS);
+        isLength(definition.translateY, TEXT_TRANSLATE_BOUNDS);
 
         annotation { "Name" : "Rotation" }
         isAngle(definition.rotation, ANGLE_360_ZERO_DEFAULT_BOUNDS);
