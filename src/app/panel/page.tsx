@@ -304,12 +304,27 @@ function PanelInner() {
   }, [curves, onshape, scaleMm, text]);
 
   if (!onshape) {
+    const rawParams = Array.from(searchParams.entries());
     return (
-      <main className="p-4 text-sm">
+      <main className="bg-white p-4 text-sm text-gray-900">
         <p className="mb-2 font-medium">Tato stránka se otevírá uvnitř Onshape jako Element Panel.</p>
         <p className="text-gray-600">
           Pokud testuješ standalone, použij <a className="underline" href="/preview">/preview</a>.
         </p>
+        <div className="mt-4 rounded bg-gray-100 p-3 text-xs">
+          <p className="mb-1 font-medium">Debug — query parametry, které panel viděl:</p>
+          {rawParams.length === 0 ? (
+            <p className="text-gray-500">žádné parametry v URL</p>
+          ) : (
+            <ul className="font-mono">
+              {rawParams.map(([k, v]) => (
+                <li key={k}>
+                  <strong>{k}</strong> = {v}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       </main>
     );
   }

@@ -1,5 +1,5 @@
-FeatureScript 2570;
-import(path : "onshape/std/geometry.fs", version : "2570.0");
+FeatureScript 2960;
+import(path : "onshape/std/geometry.fs", version : "2960.0");
 
 /**
  * textToSketch — render glyph outlines, supplied as JSON of cubic Bézier
