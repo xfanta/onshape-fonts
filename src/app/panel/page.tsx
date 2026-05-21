@@ -560,7 +560,7 @@ function PanelInner() {
               {curves.glyphs.length} glyfů ·{" "}
               {curves.glyphs.reduce(
                 (s, g) =>
-                  s + g.contours.reduce((cs, c) => cs + c.segs.length, 0),
+                  s + g.contours.reduce((cs, c) => cs + c.segments.length, 0),
                 0,
               )}{" "}
               segmentů · {payloadKB} KB

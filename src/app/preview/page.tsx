@@ -459,7 +459,7 @@ export default function PreviewPage() {
                 {curves.glyphs.reduce(
                   (s, g) =>
                     s +
-                    g.contours.reduce((cs, c) => cs + c.segs.length, 0),
+                    g.contours.reduce((cs, c) => cs + c.segments.length, 0),
                   0,
                 )}{" "}
                 segmentů

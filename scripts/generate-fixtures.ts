@@ -43,7 +43,7 @@ for (const s of samples) {
     const json = JSON.stringify(curves);
     writeFileSync(resolve(fixturesDir, s.outFile), JSON.stringify(curves, null, 2));
     const segCount = curves.glyphs.reduce(
-      (n, g) => n + g.contours.reduce((m, c) => m + c.segs.length, 0),
+      (n, g) => n + g.contours.reduce((m, c) => m + c.segments.length, 0),
       0,
     );
     const contourCount = curves.glyphs.reduce((n, g) => n + g.contours.length, 0);
