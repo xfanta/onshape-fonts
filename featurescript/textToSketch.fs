@@ -33,7 +33,7 @@ export const textToSketch = defineFeature(function(context is Context, id is Id,
         annotation { "Name" : "Em-height" }
         isLength(definition.scale, LENGTH_BOUNDS);
 
-        annotation { "Name" : "Curve data (JSON)" }
+        annotation { "Name" : "Curve data (JSON)", "UIHint" : UIHint.READ_ONLY }
         definition.curveData is string;
     }
     {
@@ -44,7 +44,7 @@ export const textToSketch = defineFeature(function(context is Context, id is Id,
         if (data.v != 1)
             throw regenError("Unsupported curveData version: " ~ toString(data.v));
 
-        var sketch = newSketchOnPlane(context, id + "sketch", {
+        var sketch = newSketch(context, id + "sketch", {
             "sketchPlane" : definition.sketchPlane
         });
 
