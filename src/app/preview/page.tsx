@@ -12,11 +12,18 @@ import {
 
 type FontSource =
   | { kind: "browser"; postscriptName: string; family: string; fullName: string }
-  | { kind: "uploaded"; family: string; key: string };
+  | { kind: "uploaded"; family: string; key: string }
+  | { kind: "google"; family: string; variant: string };
 
 interface LoadedFont {
   source: FontSource;
   font: Font;
+}
+
+interface GoogleFontMeta {
+  family: string;
+  category: string;
+  variants: string[];
 }
 
 export default function PreviewPage() {
@@ -25,6 +32,10 @@ export default function PreviewPage() {
   const [uploadedFonts, setUploadedFonts] = useState<
     { key: string; family: string; buffer: ArrayBuffer }[]
   >([]);
+  const [googleEnabled, setGoogleEnabled] = useState<boolean | null>(null);
+  const [googleFamilies, setGoogleFamilies] = useState<GoogleFontMeta[]>([]);
+  const [googleQuery, setGoogleQuery] = useState("");
+  const [googleVariant, setGoogleVariant] = useState("regular");
   const [selectedKey, setSelectedKey] = useState<string>("");
   const [loaded, setLoaded] = useState<LoadedFont | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
@@ -33,16 +44,46 @@ export default function PreviewPage() {
   const fontCacheRef = useRef<Map<string, Font>>(new Map());
 
   useEffect(() => {
-    setFontApiSupported(typeof navigator !== "undefined" && !!navigator.fonts);
+    setFontApiSupported(
+      typeof window !== "undefined" && typeof window.queryLocalFonts === "function",
+    );
+    (async () => {
+      try {
+        const res = await fetch("/api/google-fonts/list");
+        const json = await res.json();
+        setGoogleEnabled(!!json.enabled);
+        if (json.enabled && Array.isArray(json.families)) {
+          setGoogleFamilies(json.families);
+        }
+      } catch {
+        setGoogleEnabled(false);
+      }
+    })();
   }, []);
+
+  const googleFiltered = useMemo(() => {
+    if (!googleQuery.trim()) return googleFamilies.slice(0, 50);
+    const q = googleQuery.toLowerCase();
+    return googleFamilies.filter((f) => f.family.toLowerCase().includes(q)).slice(0, 50);
+  }, [googleFamilies, googleQuery]);
+
+  const selectedGoogleFamily = useMemo(() => {
+    if (!selectedKey.startsWith("google:")) return null;
+    return selectedKey.slice("google:".length).split("::")[0];
+  }, [selectedKey]);
+
+  const googleVariants = useMemo(() => {
+    if (!selectedGoogleFamily) return [];
+    return googleFamilies.find((f) => f.family === selectedGoogleFamily)?.variants ?? [];
+  }, [googleFamilies, selectedGoogleFamily]);
 
   const enumerateBrowserFonts = useCallback(async () => {
     setError(null);
     try {
-      if (!navigator.fonts) {
+      if (typeof window.queryLocalFonts !== "function") {
         throw new Error("Local Font Access API není v tomto prohlížeči dostupné.");
       }
-      const fonts = await navigator.fonts.query();
+      const fonts = await window.queryLocalFonts();
       const seen = new Set<string>();
       const deduped = fonts.filter((f) => {
         if (seen.has(f.postscriptName)) return false;
@@ -107,6 +148,12 @@ export default function PreviewPage() {
                 source: { kind: "uploaded", family: upl.family, key: upl.key },
                 font: cached,
               });
+            } else if (selectedKey.startsWith("google:")) {
+              const [family, variant] = selectedKey.slice("google:".length).split("::");
+              setLoaded({
+                source: { kind: "google", family, variant: variant ?? "regular" },
+                font: cached,
+              });
             } else {
               const ps = selectedKey.slice("browser:".length);
               const meta = browserFonts.find((b) => b.postscriptName === ps);
@@ -138,6 +185,28 @@ export default function PreviewPage() {
                 postscriptName: ps,
                 family: meta.family,
                 fullName: meta.fullName,
+              },
+              font,
+            });
+          }
+        } else if (selectedKey.startsWith("google:")) {
+          const [family, variant] = selectedKey.slice("google:".length).split("::");
+          const res = await fetch(
+            `/api/google-fonts/file?family=${encodeURIComponent(family)}&variant=${encodeURIComponent(variant ?? "regular")}`,
+          );
+          if (!res.ok) {
+            const txt = await res.text();
+            throw new Error(`Google font fetch ${res.status}: ${txt}`);
+          }
+          const buffer = await res.arrayBuffer();
+          const font = await loadFontFromBuffer(buffer);
+          fontCacheRef.current.set(selectedKey, font);
+          if (!cancelled) {
+            setLoaded({
+              source: {
+                kind: "google",
+                family,
+                variant: variant ?? "regular",
               },
               font,
             });
@@ -288,6 +357,69 @@ export default function PreviewPage() {
               Dostupných fontů: {fontOptions.length}
             </p>
           </div>
+
+          {googleEnabled && (
+            <div className="rounded border border-gray-200 p-3">
+              <span className="text-sm font-medium">Google Fonts</span>
+              <input
+                type="text"
+                list="google-families"
+                value={googleQuery}
+                onChange={(e) => setGoogleQuery(e.target.value)}
+                placeholder={`Hledat (${googleFamilies.length} fontů)...`}
+                className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              />
+              <datalist id="google-families">
+                {googleFiltered.map((f) => (
+                  <option key={f.family} value={f.family} />
+                ))}
+              </datalist>
+              {googleQuery && (
+                <div className="mt-2 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const exact = googleFamilies.find((f) => f.family === googleQuery);
+                      if (!exact) {
+                        setError(`Google font "${googleQuery}" neexistuje.`);
+                        return;
+                      }
+                      const v = exact.variants.includes("regular")
+                        ? "regular"
+                        : exact.variants[0] ?? "regular";
+                      setGoogleVariant(v);
+                      setSelectedKey(`google:${exact.family}::${v}`);
+                    }}
+                    className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700"
+                  >
+                    Použít
+                  </button>
+                  {selectedGoogleFamily && googleVariants.length > 0 && (
+                    <select
+                      value={googleVariant}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setGoogleVariant(v);
+                        setSelectedKey(`google:${selectedGoogleFamily}::${v}`);
+                      }}
+                      className="rounded border border-gray-300 px-2 py-1.5 text-sm"
+                    >
+                      {googleVariants.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          {googleEnabled === false && (
+            <p className="text-xs text-gray-500">
+              Google Fonts: nakonfiguruj <code>GOOGLE_FONTS_API_KEY</code> v <code>.env.local</code>.
+            </p>
+          )}
 
           {error && (
             <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-800">

@@ -7,7 +7,7 @@ Onshape integrated app + custom FeatureScript pro vkládání libovolného nains
 - **Next.js + TypeScript** (deploy na Vercel) — iframe panel (`/panel`) + standalone preview (`/preview`) + OAuth backend + Onshape REST proxy
 - **opentype.js** — text + font → cubic Bézier křivky → kompaktní JSON
 - **FeatureScript** (`featurescript/textToSketch.fs`) — parsuje JSON, emit `skFitSpline` per cubic na zvolené rovině
-- **Local Font Access API** (Chrome/Edge) + fallback upload `.ttf`/`.otf`
+- **Local Font Access API** (Chrome/Edge) + fallback upload `.ttf`/`.otf` + **Google Fonts** (volitelně, vyžaduje API key)
 - **Vercel KV** pro OAuth tokeny (in-memory fallback pro dev)
 
 ## Lokální dev
@@ -60,7 +60,16 @@ pnpm dev
    - Action URL: `https://<tvoje-vercel-domena>/panel`
    - Name: cokoliv (např. "Text to Sketch")
 
-### 4. Env vars
+### 4. (Volitelné) Google Fonts API key
+
+Pokud chceš v UI vybírat z ~1500 Google Fonts:
+1. Otevři https://developers.google.com/fonts/docs/developer_api → **Get a Key**.
+2. V Google Cloud Console aktivuj **Web Fonts Developer API** pro daný projekt.
+3. Zkopíruj API key do `.env.local` jako `GOOGLE_FONTS_API_KEY`.
+
+Backend stáhne přímo `.ttf` z `fonts.gstatic.com` (žádný WOFF2 decoder potřeba) a kešne metadata na 24 h. Bez API klíče je Google Fonts sekce v UI skrytá.
+
+### 5. Env vars
 
 Zkopíruj `.env.example` do `.env.local` a vyplň hodnoty:
 
@@ -69,7 +78,7 @@ cp .env.example .env.local
 openssl rand -hex 32   # SESSION_SECRET
 ```
 
-### 5. Deploy na Vercel
+### 6. Deploy na Vercel
 
 ```bash
 pnpm dlx vercel link
@@ -107,9 +116,11 @@ src/
     api/
       oauth/{start,callback,status}/route.ts
       feature/add/route.ts
+      google-fonts/{list,file}/route.ts
   lib/
     textToCurves.ts           # opentype → cubic Bézier JSON
     onshape.ts                # REST klient + add-feature body
+    googleFonts.ts            # Google Fonts Dev API klient + cache
     session.ts                # iron-session
     tokenStore.ts             # Vercel KV / in-memory
     env.ts                    # zod-validated env config

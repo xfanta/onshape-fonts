@@ -6,12 +6,10 @@ interface FontData {
   blob(): Promise<Blob>;
 }
 
-interface FontDataQueryOptions {
+interface QueryLocalFontsOptions {
   postscriptNames?: string[];
 }
 
-interface Navigator {
-  fonts?: {
-    query(options?: FontDataQueryOptions): Promise<FontData[]>;
-  };
+interface Window {
+  queryLocalFonts?(options?: QueryLocalFontsOptions): Promise<FontData[]>;
 }

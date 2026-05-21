@@ -67,6 +67,12 @@ function PanelInner() {
   const [uploadedFonts, setUploadedFonts] = useState<
     { key: string; family: string }[]
   >([]);
+  const [googleEnabled, setGoogleEnabled] = useState<boolean | null>(null);
+  const [googleFamilies, setGoogleFamilies] = useState<
+    { family: string; category: string; variants: string[] }[]
+  >([]);
+  const [googleQuery, setGoogleQuery] = useState("");
+  const [googleVariant, setGoogleVariant] = useState("regular");
   const [selectedKey, setSelectedKey] = useState<string>("");
   const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
@@ -92,9 +98,39 @@ function PanelInner() {
   }, []);
 
   useEffect(() => {
-    setFontApiSupported(typeof navigator !== "undefined" && !!navigator.fonts);
+    setFontApiSupported(
+      typeof window !== "undefined" && typeof window.queryLocalFonts === "function",
+    );
     refreshAuth();
+    (async () => {
+      try {
+        const res = await fetch("/api/google-fonts/list");
+        const json = await res.json();
+        setGoogleEnabled(!!json.enabled);
+        if (json.enabled && Array.isArray(json.families)) {
+          setGoogleFamilies(json.families);
+        }
+      } catch {
+        setGoogleEnabled(false);
+      }
+    })();
   }, [refreshAuth]);
+
+  const googleFiltered = useMemo(() => {
+    if (!googleQuery.trim()) return googleFamilies.slice(0, 50);
+    const q = googleQuery.toLowerCase();
+    return googleFamilies.filter((f) => f.family.toLowerCase().includes(q)).slice(0, 50);
+  }, [googleFamilies, googleQuery]);
+
+  const selectedGoogleFamily = useMemo(() => {
+    if (!selectedKey.startsWith("google:")) return null;
+    return selectedKey.slice("google:".length).split("::")[0];
+  }, [selectedKey]);
+
+  const googleVariants = useMemo(() => {
+    if (!selectedGoogleFamily) return [];
+    return googleFamilies.find((f) => f.family === selectedGoogleFamily)?.variants ?? [];
+  }, [googleFamilies, selectedGoogleFamily]);
 
   useEffect(() => {
     function onMessage(e: MessageEvent) {
@@ -120,10 +156,10 @@ function PanelInner() {
   const enumerateBrowserFonts = useCallback(async () => {
     setError(null);
     try {
-      if (!navigator.fonts) {
+      if (typeof window.queryLocalFonts !== "function") {
         throw new Error("Local Font Access API není dostupné.");
       }
-      const fonts = await navigator.fonts.query();
+      const fonts = await window.queryLocalFonts();
       const seen = new Set<string>();
       const deduped = fonts.filter((f) => {
         if (seen.has(f.postscriptName)) return false;
@@ -175,6 +211,16 @@ function PanelInner() {
           if (!meta) throw new Error("Font není v seznamu.");
           const blob = await meta.blob();
           const buffer = await blob.arrayBuffer();
+          const f = await loadFontFromBuffer(buffer);
+          fontCacheRef.current.set(selectedKey, f);
+          if (!cancelled) setFont(f);
+        } else if (selectedKey.startsWith("google:")) {
+          const [family, variant] = selectedKey.slice("google:".length).split("::");
+          const res = await fetch(
+            `/api/google-fonts/file?family=${encodeURIComponent(family)}&variant=${encodeURIComponent(variant ?? "regular")}`,
+          );
+          if (!res.ok) throw new Error(`Google font fetch ${res.status}: ${await res.text()}`);
+          const buffer = await res.arrayBuffer();
           const f = await loadFontFromBuffer(buffer);
           fontCacheRef.current.set(selectedKey, f);
           if (!cancelled) setFont(f);
@@ -363,6 +409,64 @@ function PanelInner() {
               </label>
             </div>
           </div>
+
+          {googleEnabled && (
+            <div className="rounded border border-gray-200 p-2">
+              <span className="text-xs font-medium text-gray-700">Google Fonts</span>
+              <input
+                type="text"
+                list="google-families-panel"
+                value={googleQuery}
+                onChange={(e) => setGoogleQuery(e.target.value)}
+                placeholder={`Hledat (${googleFamilies.length})...`}
+                className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
+              />
+              <datalist id="google-families-panel">
+                {googleFiltered.map((f) => (
+                  <option key={f.family} value={f.family} />
+                ))}
+              </datalist>
+              {googleQuery && (
+                <div className="mt-1 flex gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const exact = googleFamilies.find((f) => f.family === googleQuery);
+                      if (!exact) {
+                        setError(`Google font "${googleQuery}" neexistuje.`);
+                        return;
+                      }
+                      const v = exact.variants.includes("regular")
+                        ? "regular"
+                        : exact.variants[0] ?? "regular";
+                      setGoogleVariant(v);
+                      setSelectedKey(`google:${exact.family}::${v}`);
+                    }}
+                    className="rounded bg-blue-600 px-2 py-1 text-xs text-white hover:bg-blue-700"
+                  >
+                    Použít
+                  </button>
+                  {selectedGoogleFamily && googleVariants.length > 0 && (
+                    <select
+                      value={googleVariant}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setGoogleVariant(v);
+                        setSelectedKey(`google:${selectedGoogleFamily}::${v}`);
+                      }}
+                      className="rounded border border-gray-300 px-1 py-1 text-xs"
+                    >
+                      {googleVariants.map((v) => (
+                        <option key={v} value={v}>
+                          {v}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           <label className="block">
             <span className="text-xs font-medium text-gray-700">Em-height (mm)</span>

@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-const schema = z.object({
+const onshapeSchema = z.object({
   ONSHAPE_CLIENT_ID: z.string().min(1),
   ONSHAPE_CLIENT_SECRET: z.string().min(1),
   ONSHAPE_OAUTH_URL: z.string().url().default("https://oauth.onshape.com"),
@@ -15,19 +15,33 @@ const schema = z.object({
   KV_REST_API_TOKEN: z.string().optional(),
 });
 
-let cached: z.infer<typeof schema> | null = null;
+const googleSchema = z.object({
+  GOOGLE_FONTS_API_KEY: z.string().min(1).optional(),
+});
 
-export function getEnv() {
-  if (cached) return cached;
-  const parsed = schema.safeParse(process.env);
+type OnshapeEnv = z.infer<typeof onshapeSchema>;
+type GoogleEnv = z.infer<typeof googleSchema>;
+
+let onshapeCached: OnshapeEnv | null = null;
+let googleCached: GoogleEnv | null = null;
+
+export function getEnv(): OnshapeEnv {
+  if (onshapeCached) return onshapeCached;
+  const parsed = onshapeSchema.safeParse(process.env);
   if (!parsed.success) {
     const issues = parsed.error.issues
       .map((i) => `${i.path.join(".")}: ${i.message}`)
       .join("; ");
-    throw new Error(`Invalid environment configuration — ${issues}`);
+    throw new Error(`Invalid Onshape environment configuration — ${issues}`);
   }
-  cached = parsed.data;
-  return cached;
+  onshapeCached = parsed.data;
+  return onshapeCached;
+}
+
+export function getGoogleEnv(): GoogleEnv {
+  if (googleCached) return googleCached;
+  googleCached = googleSchema.parse(process.env);
+  return googleCached;
 }
 
 export function redirectUriFromRequest(request: Request): string {
