@@ -36,6 +36,43 @@ export interface CurveData {
 
 const round6 = (n: number) => Math.round(n * 1e6) / 1e6;
 
+/** Distance from point (px,py) to the infinite line through (ax,ay)-(bx,by). */
+function distToLine(
+  ax: number, ay: number,
+  bx: number, by: number,
+  px: number, py: number,
+): number {
+  const dx = bx - ax, dy = by - ay;
+  const len2 = dx * dx + dy * dy;
+  if (len2 === 0) return Math.hypot(px - ax, py - ay);
+  const t = ((px - ax) * dx + (py - ay) * dy) / len2;
+  const cx = ax + t * dx, cy = ay + t * dy;
+  return Math.hypot(px - cx, py - cy);
+}
+
+/** Treat as line when control is within 0.5% of em-size off the chord. */
+function isCollinearQuad(
+  p0x: number, p0y: number,
+  qx: number, qy: number,
+  p3x: number, p3y: number,
+): boolean {
+  const tol = 0.005 * Math.max(Math.abs(p3x - p0x), Math.abs(p3y - p0y), 1);
+  return distToLine(p0x, p0y, p3x, p3y, qx, qy) < tol;
+}
+
+function isCollinearCubic(
+  p0x: number, p0y: number,
+  p1x: number, p1y: number,
+  p2x: number, p2y: number,
+  p3x: number, p3y: number,
+): boolean {
+  const tol = 0.005 * Math.max(Math.abs(p3x - p0x), Math.abs(p3y - p0y), 1);
+  return (
+    distToLine(p0x, p0y, p3x, p3y, p1x, p1y) < tol &&
+    distToLine(p0x, p0y, p3x, p3y, p2x, p2y) < tol
+  );
+}
+
 function commandsToContours(
   commands: PathCommand[],
   unitsPerEm: number,
@@ -77,23 +114,34 @@ function commandsToContours(
       const p0x = cx, p0y = cy;
       const qx = cmd.x1, qy = cmd.y1;
       const p3x = cmd.x, p3y = cmd.y;
-      const c1x = p0x + (2 * (qx - p0x)) / 3;
-      const c1y = p0y + (2 * (qy - p0y)) / 3;
-      const c2x = p3x + (2 * (qx - p3x)) / 3;
-      const c2y = p3y + (2 * (qy - p3y)) / 3;
       const a = xy(p0x, p0y);
-      const b1 = xy(c1x, c1y);
-      const b2 = xy(c2x, c2y);
       const d = xy(p3x, p3y);
-      ensure().segments.push([SEG_CUBIC, a[0], a[1], b1[0], b1[1], b2[0], b2[1], d[0], d[1]]);
+      if (isCollinearQuad(p0x, p0y, qx, qy, p3x, p3y)) {
+        // Degenerate quadratic (control on the line) — emit as line.
+        ensure().segments.push([SEG_LINE, a[0], a[1], d[0], d[1]]);
+      } else {
+        const c1x = p0x + (2 * (qx - p0x)) / 3;
+        const c1y = p0y + (2 * (qy - p0y)) / 3;
+        const c2x = p3x + (2 * (qx - p3x)) / 3;
+        const c2y = p3y + (2 * (qy - p3y)) / 3;
+        const b1 = xy(c1x, c1y);
+        const b2 = xy(c2x, c2y);
+        ensure().segments.push([SEG_CUBIC, a[0], a[1], b1[0], b1[1], b2[0], b2[1], d[0], d[1]]);
+      }
       if (!firstSketchPoint) firstSketchPoint = a;
       [cx, cy] = [p3x, p3y];
     } else if (cmd.type === "C") {
       const a = xy(cx, cy);
-      const b1 = xy(cmd.x1, cmd.y1);
-      const b2 = xy(cmd.x2, cmd.y2);
       const d = xy(cmd.x, cmd.y);
-      ensure().segments.push([SEG_CUBIC, a[0], a[1], b1[0], b1[1], b2[0], b2[1], d[0], d[1]]);
+      if (isCollinearCubic(cx, cy, cmd.x1, cmd.y1, cmd.x2, cmd.y2, cmd.x, cmd.y)) {
+        // Degenerate cubic (all controls colinear) — emit as line so we don't
+        // hit skFitSpline edge cases (tangents near zero / collapsed Hermite).
+        ensure().segments.push([SEG_LINE, a[0], a[1], d[0], d[1]]);
+      } else {
+        const b1 = xy(cmd.x1, cmd.y1);
+        const b2 = xy(cmd.x2, cmd.y2);
+        ensure().segments.push([SEG_CUBIC, a[0], a[1], b1[0], b1[1], b2[0], b2[1], d[0], d[1]]);
+      }
       if (!firstSketchPoint) firstSketchPoint = a;
       [cx, cy] = [cmd.x, cmd.y];
     } else if (cmd.type === "Z") {
