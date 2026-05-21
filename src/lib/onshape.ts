@@ -138,6 +138,61 @@ export async function getSessionInfo(
   return await onshapeFetch(userId, "/api/users/sessioninfo");
 }
 
+interface ResolvedFsRef {
+  fsElementId: string;
+  microversionId: string;
+}
+
+const fsRefCache = new Map<string, ResolvedFsRef>();
+
+/**
+ * Resolve the internal element-id and microversion-id of our published
+ * FeatureScript element. The values in ONSHAPE_FS_ELEMENT_ID/VERSION_ID
+ * are the *URL* ids; Onshape's `namespace` field for BTMFeature-134
+ * needs the internal FS element id plus the microversion that the
+ * version points to.
+ *
+ * Format empirically discovered to be: `e<fsElementId>::m<microversionId>`.
+ */
+export async function resolvePublishedFsRef(userId: string): Promise<ResolvedFsRef> {
+  const env = getEnv();
+  const cacheKey = `${env.ONSHAPE_FS_DOCUMENT_ID}/${env.ONSHAPE_FS_VERSION_ID}`;
+  const cached = fsRefCache.get(cacheKey);
+  if (cached) return cached;
+
+  // Elements at this version — find the Feature Studio (or by id match).
+  const elements = await onshapeFetch<
+    {
+      id: string;
+      name: string;
+      elementType: string;
+      microversionId: string;
+    }[]
+  >(
+    userId,
+    `/api/v9/documents/d/${env.ONSHAPE_FS_DOCUMENT_ID}/v/${env.ONSHAPE_FS_VERSION_ID}/elements`,
+  );
+
+  let chosen = elements.find((e) => e.id === env.ONSHAPE_FS_ELEMENT_ID);
+  if (!chosen) {
+    chosen = elements.find(
+      (e) => e.elementType === "FEATURESTUDIO" || e.elementType === "FeatureStudio",
+    );
+  }
+  if (!chosen) {
+    throw new Error(
+      `Could not find Feature Studio element in document ${env.ONSHAPE_FS_DOCUMENT_ID} v${env.ONSHAPE_FS_VERSION_ID}. Elements: ${JSON.stringify(elements.map((e) => ({ id: e.id, name: e.name, elementType: e.elementType })))}`,
+    );
+  }
+
+  const resolved: ResolvedFsRef = {
+    fsElementId: chosen.id,
+    microversionId: chosen.microversionId,
+  };
+  fsRefCache.set(cacheKey, resolved);
+  return resolved;
+}
+
 interface PartStudioRef {
   documentId: string;
   workspaceId: string;
@@ -155,7 +210,8 @@ export async function addTextToSketchFeature(
   },
 ): Promise<unknown> {
   const env = getEnv();
-  const namespace = `d${env.ONSHAPE_FS_DOCUMENT_ID}::v${env.ONSHAPE_FS_VERSION_ID}::e${env.ONSHAPE_FS_ELEMENT_ID}`;
+  const { fsElementId, microversionId } = await resolvePublishedFsRef(userId);
+  const namespace = `e${fsElementId}::m${microversionId}`;
 
   const body = {
     btType: "BTFeatureDefinitionCall-1406",
