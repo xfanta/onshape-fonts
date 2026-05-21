@@ -498,6 +498,29 @@ export default function PreviewPage() {
             {curves ? JSON.stringify(curves, null, 2) : "—"}
           </pre>
         </details>
+        <details>
+          <summary className="cursor-pointer text-sm text-gray-700">
+            Debug: raw opentype.js path commands per glyph
+          </summary>
+          <pre className="mt-2 max-h-96 overflow-auto rounded bg-gray-50 p-3 text-xs">
+            {loaded
+              ? Array.from(text)
+                  .map((ch) => {
+                    const g = loaded.font.charToGlyph(ch);
+                    const p = g.getPath(0, 0, loaded.font.unitsPerEm);
+                    const cmds = (p.commands as unknown[])
+                      .map((c) =>
+                        typeof c === "object" && c !== null
+                          ? JSON.stringify(c)
+                          : String(c),
+                      )
+                      .join("\n  ");
+                    return `--- "${ch}" (unicode ${ch.charCodeAt(0)}) — glyph ${g.index}, advance ${g.advanceWidth} ---\n  ${cmds}`;
+                  })
+                  .join("\n\n")
+              : "—"}
+          </pre>
+        </details>
       </section>
     </main>
   );
