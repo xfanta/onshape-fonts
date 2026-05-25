@@ -1,6 +1,8 @@
-# onshape-fonts
+# Google Fonts for Onshape
 
-Onshape integrated app + custom FeatureScript pro vkládání libovolného nainstalovaného fontu do Part Studio skici jako **nativní, editovatelnou geometrii** (resize přes `scale` parametr).
+Onshape integrated app + custom FeatureScript pro vkládání textu z **Google Fonts** (~1900 rodin) do Part Studio skici jako **nativní, editovatelnou geometrii** (`scale`, `translateX/Y`, `rotation` parametry).
+
+Sekundárně podporuje upload vlastních `.ttf`/`.otf` souborů.
 
 ## Architektura
 

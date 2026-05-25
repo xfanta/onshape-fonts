@@ -14,6 +14,7 @@ export async function GET() {
       family: f.family,
       category: f.category,
       variants: f.variants,
+      subsets: f.subsets,
     }));
     return NextResponse.json(
       { enabled: true, families: slim },

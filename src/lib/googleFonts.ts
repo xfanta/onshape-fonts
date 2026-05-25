@@ -4,6 +4,7 @@ export interface GoogleFontFamily {
   family: string;
   category: string;
   variants: string[];
+  subsets: string[];
   files: Record<string, string>;
 }
 
@@ -37,6 +38,7 @@ export async function listGoogleFamilies(): Promise<GoogleFontFamily[]> {
     family: it.family,
     category: it.category,
     variants: it.variants,
+    subsets: it.subsets ?? [],
     files: it.files,
   }));
   familiesCache = { value: items, expires: Date.now() + FAMILIES_TTL_MS };
