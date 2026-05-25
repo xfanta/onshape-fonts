@@ -246,8 +246,23 @@ export async function addTextToSketchFeature(
         },
         {
           btType: "BTMParameterQuantity-147",
+          parameterId: "offsetX",
+          expression: "0 mm",
+        },
+        {
+          btType: "BTMParameterQuantity-147",
+          parameterId: "offsetY",
+          expression: "0 mm",
+        },
+        {
+          btType: "BTMParameterQuantity-147",
           parameterId: "rotation",
           expression: options.rotationExpression ?? "0 deg",
+        },
+        {
+          btType: "BTMParameterBoolean-144",
+          parameterId: "showRawData",
+          value: false,
         },
         {
           btType: "BTMParameterString-149",

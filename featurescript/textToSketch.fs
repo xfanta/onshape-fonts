@@ -24,8 +24,21 @@ import(path : "onshape/std/geometry.fs", version : "2960.0");
  *   }
  *
  * Coordinates are em-normalized (1 unit = 1 em), Y-up, baseline = y = 0.
- * Multiply by `scale`, rotate around origin, place at origin point.
+ * Final placement = origin + (offsetX, offsetY), with rotation around
+ * that point.
  */
+
+// Signed offset bounds — only the first map entry carries [min, default, max].
+export const TEXT_OFFSET_BOUNDS =
+{
+    (meter)      : [-500.0, 0.0, 500.0],
+    (centimeter) : 0.0,
+    (millimeter) : 0.0,
+    (inch)       : 0.0,
+    (foot)       : 0.0,
+    (yard)       : 0.0
+} as LengthBoundSpec;
+
 annotation { "Feature Type Name" : "Text to Sketch" }
 export const textToSketch = defineFeature(function(context is Context, id is Id, definition is map)
     precondition
@@ -39,11 +52,23 @@ export const textToSketch = defineFeature(function(context is Context, id is Id,
         annotation { "Name" : "Em-height" }
         isLength(definition.scale, LENGTH_BOUNDS);
 
+        annotation { "Name" : "Offset X" }
+        isLength(definition.offsetX, TEXT_OFFSET_BOUNDS);
+
+        annotation { "Name" : "Offset Y" }
+        isLength(definition.offsetY, TEXT_OFFSET_BOUNDS);
+
         annotation { "Name" : "Rotation" }
         isAngle(definition.rotation, ANGLE_360_ZERO_DEFAULT_BOUNDS);
 
-        annotation { "Name" : "Curve data (JSON)", "UIHint" : UIHint.READ_ONLY }
-        definition.curveData is string;
+        annotation { "Name" : "Show raw data" }
+        definition.showRawData is boolean;
+
+        if (definition.showRawData)
+        {
+            annotation { "Name" : "Curve data (JSON)", "UIHint" : UIHint.READ_ONLY }
+            definition.curveData is string;
+        }
     }
     {
         if (definition.curveData == "")
@@ -63,8 +88,8 @@ export const textToSketch = defineFeature(function(context is Context, id is Id,
         const cosT = cos(definition.rotation);
         const sinT = sin(definition.rotation);
 
-        // Origin point — sketch (0,0) by default; if the user picked a vertex,
-        // project that 3D point onto the sketch plane to get a 2D offset.
+        // Resolve origin: sketch (0,0) by default; if a vertex is picked,
+        // project it onto the sketch plane.
         var originPoint = vector(0 * meter, 0 * meter);
         if (size(evaluateQuery(context, definition.origin)) > 0)
         {
@@ -72,8 +97,9 @@ export const textToSketch = defineFeature(function(context is Context, id is Id,
             var sketchPlaneObj = evPlane(context, { "face" : definition.sketchPlane });
             originPoint = worldToPlane3D(sketchPlaneObj, p3d);
         }
-        const ox = originPoint[0];
-        const oy = originPoint[1];
+        // Apply user offset on top of the resolved origin.
+        const ox = originPoint[0] + definition.offsetX;
+        const oy = originPoint[1] + definition.offsetY;
 
         var totalSegs = 0;
 
