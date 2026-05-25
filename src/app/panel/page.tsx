@@ -196,13 +196,6 @@ function PanelInner() {
 
   return (
     <main className="flex h-screen flex-col gap-4 overflow-auto bg-white p-3 text-sm text-gray-900">
-      <header>
-        <h1 className="text-base font-semibold">Google Fonts</h1>
-        <p className="text-xs text-gray-500">
-          Pick a font, insert text as native sketch geometry.
-        </p>
-      </header>
-
       {authenticated === false && (
         <div className="rounded border border-amber-300 bg-amber-50 p-3 text-amber-900">
           <p className="mb-2 font-medium">Onshape connection</p>

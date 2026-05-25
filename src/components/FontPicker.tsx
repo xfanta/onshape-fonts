@@ -339,173 +339,185 @@ export function FontPicker({
     [families, onSelectedChange],
   );
 
+  const isUploaded = selected?.kind === "uploaded";
+
   return (
-    <div className="space-y-3">
-      {googleEnabled === false && (
-        <div className="rounded bg-amber-50 p-2 text-xs text-amber-900">
-          Google Fonts unavailable (set <code>GOOGLE_FONTS_API_KEY</code>).
-          Upload a font below.
-        </div>
-      )}
+    <div className="space-y-6">
+      {/* === Google Fonts section === */}
+      <section className="space-y-3">
+        <header>
+          <h1 className="text-base font-semibold">Google Fonts</h1>
+          <p className="text-xs text-gray-500">
+            {googleEnabled === false
+              ? "Disabled — set GOOGLE_FONTS_API_KEY."
+              : `Browse ${families.length} fonts, filter by category and subset.`}
+          </p>
+        </header>
 
-      {/* Search */}
-      <label className="block">
-        <span className="text-xs font-medium text-gray-700">Search font</span>
-        <input
-          type="text"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={
-            googleEnabled
-              ? `Search ${filteredByFacets.length} fonts...`
-              : "Google Fonts disabled"
-          }
-          className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
-          disabled={!googleEnabled}
-        />
-      </label>
-
-      {/* Category filter */}
-      {googleEnabled && categories.length > 0 && (
-        <div>
-          <span className="text-xs font-medium text-gray-700">Category</span>
-          <div className="mt-1 flex flex-wrap gap-1">
-            <FilterBtn
-              active={categoryFilter === "all"}
-              onClick={() => setCategoryFilter("all")}
-            >
-              All
-            </FilterBtn>
-            {categories.map((c) => (
-              <FilterBtn
-                key={c}
-                active={categoryFilter === c}
-                onClick={() => setCategoryFilter(c)}
-                fontFamily={
-                  CATEGORY_PREVIEW_FONT[c]
-                    ? `"${CATEGORY_PREVIEW_FONT[c]}", ${c === "monospace" ? "monospace" : c === "serif" ? "serif" : "sans-serif"}`
-                    : undefined
-                }
-              >
-                {CATEGORY_LABELS[c] ?? c}
-              </FilterBtn>
-            ))}
+        {googleEnabled === false && (
+          <div className="rounded bg-amber-50 p-2 text-xs text-amber-900">
+            Google Fonts unavailable (set <code>GOOGLE_FONTS_API_KEY</code>).
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Subset filter */}
-      {googleEnabled && subsets.length > 0 && (
-        <div>
-          <span className="text-xs font-medium text-gray-700">Subset</span>
-          <div className="mt-1 flex flex-wrap gap-1">
-            {subsets.slice(0, 10).map((s) => (
-              <FilterBtn
-                key={s}
-                active={subsetFilter === s}
-                onClick={() => setSubsetFilter(s)}
-              >
-                {s}
-              </FilterBtn>
-            ))}
-          </div>
-        </div>
-      )}
+        <label className="block">
+          <span className="text-xs font-medium text-gray-700">Search font</span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={
+              googleEnabled
+                ? `Search ${filteredByFacets.length} fonts...`
+                : "Google Fonts disabled"
+            }
+            className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+            disabled={!googleEnabled}
+          />
+        </label>
 
-      {/* Filtered family list */}
-      {googleEnabled && (
-        <div className="max-h-48 overflow-auto rounded border border-gray-200">
-          {filtered.length === 0 ? (
-            <div className="p-2 text-xs text-gray-500">No fonts match</div>
-          ) : (
-            <ul>
-              {filtered.map((f) => {
-                const isSelected =
-                  selected?.kind === "google" && selected.family === f.family;
-                return (
-                  <li key={f.family}>
-                    <button
-                      type="button"
-                      onClick={() => pickGoogle(f.family)}
-                      className={`w-full px-2 py-1.5 text-left text-sm hover:bg-blue-50 ${
-                        isSelected ? "bg-blue-100 font-medium" : ""
-                      }`}
-                    >
-                      {f.family}{" "}
-                      <span className="text-xs text-gray-400">
-                        ({CATEGORY_LABELS[f.category] ?? f.category})
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </div>
-      )}
-
-      {/* Style + Weight (only when Google font picked) */}
-      {selected?.kind === "google" && currentParsed && (
-        <>
+        {googleEnabled && categories.length > 0 && (
           <div>
-            <span className="text-xs font-medium text-gray-700">Style</span>
+            <span className="text-xs font-medium text-gray-700">Category</span>
             <div className="mt-1 flex flex-wrap gap-1">
               <FilterBtn
-                active={!currentParsed.italic}
-                onClick={() =>
-                  onSelectedChange({
-                    ...selected,
-                    variant: buildVariant(currentParsed.weight, false),
-                  })
-                }
+                active={categoryFilter === "all"}
+                onClick={() => setCategoryFilter("all")}
               >
-                Regular
+                All
               </FilterBtn>
-              <FilterBtn
-                active={currentParsed.italic}
-                disabled={!availableItalicForWeight(currentParsed.weight)}
-                onClick={() =>
-                  onSelectedChange({
-                    ...selected,
-                    variant: buildVariant(currentParsed.weight, true),
-                  })
-                }
-              >
-                Italic
-              </FilterBtn>
-            </div>
-          </div>
-          <div>
-            <span className="text-xs font-medium text-gray-700">Weight</span>
-            <div className="mt-1 flex flex-wrap gap-1">
-              {WEIGHTS.map((w) => (
+              {categories.map((c) => (
                 <FilterBtn
-                  key={w}
-                  active={currentParsed.weight === w}
-                  disabled={!availableWeights.has(w)}
-                  onClick={() =>
-                    onSelectedChange({
-                      ...selected,
-                      variant: buildVariant(w, currentParsed.italic),
-                    })
+                  key={c}
+                  active={categoryFilter === c}
+                  onClick={() => setCategoryFilter(c)}
+                  fontFamily={
+                    CATEGORY_PREVIEW_FONT[c]
+                      ? `"${CATEGORY_PREVIEW_FONT[c]}", ${c === "monospace" ? "monospace" : c === "serif" ? "serif" : "sans-serif"}`
+                      : undefined
                   }
                 >
-                  {w}
+                  {CATEGORY_LABELS[c] ?? c}
                 </FilterBtn>
               ))}
             </div>
           </div>
-        </>
-      )}
+        )}
 
-      {/* Upload (secondary) */}
-      <details>
-        <summary className="cursor-pointer text-xs text-gray-600">
-          Upload custom font (.ttf/.otf)
-        </summary>
-        <div className="mt-2 flex flex-wrap gap-2">
-          <label className="cursor-pointer rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50">
-            Upload file
+        {googleEnabled && subsets.length > 0 && (
+          <div>
+            <span className="text-xs font-medium text-gray-700">Subset</span>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {subsets.slice(0, 10).map((s) => (
+                <FilterBtn
+                  key={s}
+                  active={subsetFilter === s}
+                  onClick={() => setSubsetFilter(s)}
+                >
+                  {s}
+                </FilterBtn>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {googleEnabled && (
+          <div className="max-h-48 overflow-auto rounded border border-gray-200">
+            {filtered.length === 0 ? (
+              <div className="p-2 text-xs text-gray-500">No fonts match</div>
+            ) : (
+              <ul>
+                {filtered.map((f) => {
+                  const isSelected =
+                    selected?.kind === "google" && selected.family === f.family;
+                  return (
+                    <li key={f.family}>
+                      <button
+                        type="button"
+                        onClick={() => pickGoogle(f.family)}
+                        className={`w-full px-2 py-1.5 text-left text-sm hover:bg-blue-50 ${
+                          isSelected ? "bg-blue-100 font-medium" : ""
+                        }`}
+                      >
+                        {f.family}{" "}
+                        <span className="text-xs text-gray-400">
+                          ({CATEGORY_LABELS[f.category] ?? f.category})
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        )}
+
+        {selected?.kind === "google" && currentParsed && (
+          <>
+            <div>
+              <span className="text-xs font-medium text-gray-700">Style</span>
+              <div className="mt-1 flex flex-wrap gap-1">
+                <FilterBtn
+                  active={!currentParsed.italic}
+                  onClick={() =>
+                    onSelectedChange({
+                      ...selected,
+                      variant: buildVariant(currentParsed.weight, false),
+                    })
+                  }
+                >
+                  Regular
+                </FilterBtn>
+                <FilterBtn
+                  active={currentParsed.italic}
+                  disabled={!availableItalicForWeight(currentParsed.weight)}
+                  onClick={() =>
+                    onSelectedChange({
+                      ...selected,
+                      variant: buildVariant(currentParsed.weight, true),
+                    })
+                  }
+                >
+                  Italic
+                </FilterBtn>
+              </div>
+            </div>
+            <div>
+              <span className="text-xs font-medium text-gray-700">Weight</span>
+              <div className="mt-1 flex flex-wrap gap-1">
+                {WEIGHTS.map((w) => (
+                  <FilterBtn
+                    key={w}
+                    active={currentParsed.weight === w}
+                    disabled={!availableWeights.has(w)}
+                    onClick={() =>
+                      onSelectedChange({
+                        ...selected,
+                        variant: buildVariant(w, currentParsed.italic),
+                      })
+                    }
+                  >
+                    {w}
+                  </FilterBtn>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+      </section>
+
+      {/* === Upload custom font section === */}
+      <section className="space-y-3">
+        <header>
+          <h1 className="text-base font-semibold">Upload custom font</h1>
+          <p className="text-xs text-gray-500">
+            Use a .ttf/.otf file from your computer.
+          </p>
+        </header>
+
+        <div className="flex flex-wrap gap-2">
+          <label className="cursor-pointer rounded border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50">
+            Choose file
             <input
               type="file"
               accept=".ttf,.otf"
@@ -534,30 +546,38 @@ export function FontPicker({
           ))}
         </div>
         {inIframe && (
-          <p className="mt-1 text-xs text-gray-500">
+          <p className="text-xs text-gray-500">
             System fonts can&apos;t be read inside Onshape (browser blocks).
           </p>
         )}
-      </details>
+      </section>
 
-      {/* Text + live preview */}
-      <div>
-        <span className="text-xs font-medium text-gray-700">Text</span>
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => onTextChange(e.target.value)}
-          placeholder="The quick brown fox"
-          className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
-        />
-        <div
-          className="mt-1 min-h-12 rounded border border-gray-200 bg-white p-3 text-2xl leading-tight"
-          style={previewStyle}
-        >
-          {text || "The quick brown fox"}
-        </div>
+      {/* === Text + preview === */}
+      <section>
+        <label className="block">
+          <span className="text-xs font-medium text-gray-700">Text</span>
+          <input
+            type="text"
+            value={text}
+            onChange={(e) => onTextChange(e.target.value)}
+            placeholder="The quick brown fox"
+            className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+          />
+        </label>
+        {isUploaded ? (
+          <div className="mt-1 min-h-12 rounded border border-dashed border-gray-300 bg-gray-50 p-3 text-xs italic text-gray-500">
+            Preview not available for local fonts.
+          </div>
+        ) : (
+          <div
+            className="mt-1 min-h-12 rounded border border-gray-200 bg-white p-3 text-2xl leading-tight"
+            style={previewStyle}
+          >
+            {text || "The quick brown fox"}
+          </div>
+        )}
         {loading && <p className="mt-1 text-xs text-gray-500">Loading font...</p>}
-      </div>
+      </section>
 
       {error && (
         <div className="rounded bg-red-50 p-2 text-xs text-red-800">{error}</div>
