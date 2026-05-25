@@ -203,7 +203,7 @@ function PanelInner() {
             type="button"
             onClick={onLogin}
             disabled={authChecking}
-            className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded bg-[#1189e3] px-3 py-1.5 text-white hover:bg-[#0d7ac9] disabled:opacity-50"
           >
             Sign in via OAuth
           </button>
@@ -240,7 +240,7 @@ function PanelInner() {
             type="button"
             onClick={onInsert}
             disabled={busy || !curves}
-            className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
+            className="rounded bg-[#1189e3] px-4 py-2 text-white hover:bg-[#0d7ac9] disabled:opacity-50"
           >
             {busy ? "Inserting..." : "Insert into Part Studio"}
           </button>
