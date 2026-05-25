@@ -209,12 +209,11 @@ export async function addTextToSketchFeature(
   ref: PartStudioRef,
   options: {
     curveJson: string;
-    scaleExpression: string;
-    translateXExpression?: string;
-    translateYExpression?: string;
+    scaleExpression?: string;
     rotationExpression?: string;
     name?: string;
     sketchPlaneQueries?: unknown[];
+    originQueries?: unknown[];
   },
 ): Promise<{ result: unknown; namespace: string; debugBody: unknown }> {
   const env = getEnv();
@@ -236,19 +235,14 @@ export async function addTextToSketchFeature(
           queries: options.sketchPlaneQueries ?? [],
         },
         {
+          btType: "BTMParameterQueryList-148",
+          parameterId: "origin",
+          queries: options.originQueries ?? [],
+        },
+        {
           btType: "BTMParameterQuantity-147",
           parameterId: "scale",
-          expression: options.scaleExpression,
-        },
-        {
-          btType: "BTMParameterQuantity-147",
-          parameterId: "translateX",
-          expression: options.translateXExpression ?? "0 mm",
-        },
-        {
-          btType: "BTMParameterQuantity-147",
-          parameterId: "translateY",
-          expression: options.translateYExpression ?? "0 mm",
+          expression: options.scaleExpression ?? "10 mm",
         },
         {
           btType: "BTMParameterQuantity-147",

@@ -8,10 +8,6 @@ const bodySchema = z.object({
   workspaceId: z.string().min(1),
   elementId: z.string().min(1),
   curveJson: z.string().min(1),
-  scaleExpression: z.string().min(1),
-  translateXExpression: z.string().optional(),
-  translateYExpression: z.string().optional(),
-  rotationExpression: z.string().optional(),
   name: z.string().optional(),
   onshapeUserId: z.string().min(1).optional(),
 });
@@ -45,10 +41,6 @@ export async function POST(request: NextRequest) {
       },
       {
         curveJson: parsed.data.curveJson,
-        scaleExpression: parsed.data.scaleExpression,
-        translateXExpression: parsed.data.translateXExpression,
-        translateYExpression: parsed.data.translateYExpression,
-        rotationExpression: parsed.data.rotationExpression,
         name: parsed.data.name,
       },
     );

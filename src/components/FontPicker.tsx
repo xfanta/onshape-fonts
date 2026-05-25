@@ -540,9 +540,9 @@ export function FontPicker({
         )}
       </details>
 
-      {/* Preview */}
+      {/* Text + live preview */}
       <div>
-        <span className="text-xs font-medium text-gray-700">Preview</span>
+        <span className="text-xs font-medium text-gray-700">Text</span>
         <input
           type="text"
           value={text}

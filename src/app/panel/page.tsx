@@ -9,12 +9,7 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Font } from "opentype.js";
-import {
-  CurveData,
-  curvesBounds,
-  curvesToSvgPath,
-  textToCurves,
-} from "@/lib/textToCurves";
+import { CurveData, textToCurves } from "@/lib/textToCurves";
 import { FontPicker, SelectedFont } from "@/components/FontPicker";
 
 interface OnshapeContext {
@@ -56,10 +51,6 @@ function PanelInner() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [authChecking, setAuthChecking] = useState(false);
   const [text, setText] = useState("The quick brown fox");
-  const [scaleMm, setScaleMm] = useState(10);
-  const [translateXmm, setTranslateXmm] = useState(0);
-  const [translateYmm, setTranslateYmm] = useState(0);
-  const [rotationDeg, setRotationDeg] = useState(0);
   const [selected, setSelected] = useState<SelectedFont | null>(null);
   const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
@@ -129,18 +120,6 @@ function PanelInner() {
     }
   }, [font, text]);
 
-  const svg = useMemo(() => {
-    if (!curves) return null;
-    const b = curvesBounds(curves);
-    const pad = 0.05;
-    const w = Math.max(0.01, b.maxX - b.minX) + pad * 2;
-    const h = Math.max(0.01, b.maxY - b.minY) + pad * 2;
-    return {
-      viewBox: `${b.minX - pad} ${-b.maxY - pad} ${w} ${h}`,
-      path: curvesToSvgPath(curves),
-    };
-  }, [curves]);
-
   const payloadBytes = curves
     ? new Blob([JSON.stringify(curves)]).size
     : 0;
@@ -165,10 +144,6 @@ function PanelInner() {
           workspaceId: onshape.workspaceId,
           elementId: onshape.elementId,
           curveJson: JSON.stringify(curves),
-          scaleExpression: `${scaleMm} mm`,
-          translateXExpression: `${translateXmm} mm`,
-          translateYExpression: `${translateYmm} mm`,
-          rotationExpression: `${rotationDeg} deg`,
           name: `Text "${text.slice(0, 40)}"`,
           onshapeUserId: onshape.userId ?? undefined,
         }),
@@ -187,7 +162,7 @@ function PanelInner() {
     } finally {
       setBusy(false);
     }
-  }, [curves, onshape, scaleMm, translateXmm, translateYmm, rotationDeg, text]);
+  }, [curves, onshape, text]);
 
   if (!onshape) {
     return (
@@ -253,89 +228,19 @@ function PanelInner() {
             inIframe={inIframe}
           />
 
-          {/* Onshape insert controls */}
-          <fieldset className="rounded border border-gray-200 p-3">
-            <legend className="px-1 text-xs font-medium text-gray-700">
-              Onshape parameters
-            </legend>
-            <div className="grid grid-cols-2 gap-2">
-              <label className="block">
-                <span className="text-xs text-gray-600">Em-height (mm)</span>
-                <input
-                  type="number"
-                  min={0.1}
-                  step={0.5}
-                  value={scaleMm}
-                  onChange={(e) => setScaleMm(Number(e.target.value) || 0)}
-                  className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs text-gray-600">Rotation (°)</span>
-                <input
-                  type="number"
-                  step={5}
-                  value={rotationDeg}
-                  onChange={(e) => setRotationDeg(Number(e.target.value) || 0)}
-                  className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs text-gray-600">Translate X (mm)</span>
-                <input
-                  type="number"
-                  step={1}
-                  value={translateXmm}
-                  onChange={(e) => setTranslateXmm(Number(e.target.value) || 0)}
-                  className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
-                />
-              </label>
-              <label className="block">
-                <span className="text-xs text-gray-600">Translate Y (mm)</span>
-                <input
-                  type="number"
-                  step={1}
-                  value={translateYmm}
-                  onChange={(e) => setTranslateYmm(Number(e.target.value) || 0)}
-                  className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5"
-                />
-              </label>
-            </div>
-          </fieldset>
-
-          {/* Sketch preview (actual curve geometry) */}
-          {svg && (
-            <div>
-              <span className="text-xs font-medium text-gray-700">
-                Sketch preview
-              </span>
-              <div className="mt-1 aspect-[3/1] max-h-32 w-full rounded border border-gray-200 bg-white p-2">
-                <svg
-                  viewBox={svg.viewBox}
-                  className="h-full w-full"
-                  xmlns="http://www.w3.org/2000/svg"
-                  preserveAspectRatio="xMidYMid meet"
-                >
-                  <g transform="scale(1 -1)">
-                    <path d={svg.path} fill="black" fillRule="evenodd" />
-                  </g>
-                </svg>
-              </div>
-              {curves && (
-                <p
-                  className={`mt-1 text-xs ${payloadWarn ? "text-amber-700" : "text-gray-500"}`}
-                >
-                  {curves.glyphs.length} glyphs ·{" "}
-                  {curves.glyphs.reduce(
-                    (s, g) =>
-                      s + g.contours.reduce((cs, c) => cs + c.segments.length, 0),
-                    0,
-                  )}{" "}
-                  segments · {payloadKB} KB
-                  {payloadWarn && " — large payload, consider shorter text"}
-                </p>
-              )}
-            </div>
+          {curves && (
+            <p
+              className={`text-xs ${payloadWarn ? "text-amber-700" : "text-gray-500"}`}
+            >
+              {curves.glyphs.length} glyphs ·{" "}
+              {curves.glyphs.reduce(
+                (s, g) =>
+                  s + g.contours.reduce((cs, c) => cs + c.segments.length, 0),
+                0,
+              )}{" "}
+              segments · {payloadKB} KB
+              {payloadWarn && " — large payload, consider shorter text"}
+            </p>
           )}
 
           <button
