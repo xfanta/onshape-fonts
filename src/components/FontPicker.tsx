@@ -209,35 +209,30 @@ export function FontPicker({
     return parseVariant(selected.variant);
   }, [selected]);
 
-  // Load FontFace into the document so the preview renders natively.
+  // Preload ALL variants of the selected Google family via the standard
+  // Google Fonts CSS API so weight/style preview buttons can render in
+  // their own actual style.
   useEffect(() => {
     if (selected?.kind !== "google") return;
     const meta = families.find((f) => f.family === selected.family);
     if (!meta) return;
-    const url = `/api/google-fonts/file?family=${encodeURIComponent(
-      selected.family,
-    )}&variant=${encodeURIComponent(selected.variant)}`;
-    const parsed = parseVariant(selected.variant);
-    const fontFace = new FontFace(selected.family, `url(${url})`, {
-      weight: String(parsed.weight),
-      style: parsed.italic ? "italic" : "normal",
-    });
-    let cancelled = false;
-    fontFace
-      .load()
-      .then((ff) => {
-        if (cancelled) return;
-        document.fonts.add(ff);
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-      try {
-        document.fonts.delete(fontFace);
-      } catch {
-        /* ignore */
-      }
-    };
+    // Build ital,wght@... axis spec from the variants the font publishes.
+    const axes = meta.variants
+      .map((v) => parseVariant(v))
+      .map((p) => `${p.italic ? 1 : 0},${p.weight}`)
+      .sort()
+      .join(";");
+    const familyEnc = encodeURIComponent(meta.family).replace(/%20/g, "+");
+    const href = `https://fonts.googleapis.com/css2?family=${familyEnc}:ital,wght@${axes}&display=swap`;
+    const id = `gf-family-${meta.family.replace(/[^\w]/g, "-")}`;
+    let link = document.getElementById(id) as HTMLLinkElement | null;
+    if (!link) {
+      link = document.createElement("link");
+      link.id = id;
+      link.rel = "stylesheet";
+      link.href = href;
+      document.head.appendChild(link);
+    }
   }, [families, selected]);
 
   // Load opentype.js Font object whenever selection changes — that's what
@@ -435,8 +430,8 @@ export function FontPicker({
                       <button
                         type="button"
                         onClick={() => pickGoogle(f.family)}
-                        className={`w-full px-2 py-1.5 text-left text-sm hover:bg-blue-50 ${
-                          isSelected ? "bg-blue-100 font-medium" : ""
+                        className={`w-full px-2 py-1.5 text-left text-sm hover:bg-[#1189e3]/10 ${
+                          isSelected ? "bg-[#1189e3]/20 font-medium" : ""
                         }`}
                       >
                         {f.family}{" "}
@@ -459,6 +454,9 @@ export function FontPicker({
               <div className="mt-1 flex flex-wrap gap-1">
                 <FilterBtn
                   active={!currentParsed.italic}
+                  fontFamily={`"${selected.family}", sans-serif`}
+                  fontWeight={currentParsed.weight}
+                  fontStyle="normal"
                   onClick={() =>
                     onSelectedChange({
                       ...selected,
@@ -471,6 +469,9 @@ export function FontPicker({
                 <FilterBtn
                   active={currentParsed.italic}
                   disabled={!availableItalicForWeight(currentParsed.weight)}
+                  fontFamily={`"${selected.family}", sans-serif`}
+                  fontWeight={currentParsed.weight}
+                  fontStyle="italic"
                   onClick={() =>
                     onSelectedChange({
                       ...selected,
@@ -490,6 +491,9 @@ export function FontPicker({
                     key={w}
                     active={currentParsed.weight === w}
                     disabled={!availableWeights.has(w)}
+                    fontFamily={`"${selected.family}", sans-serif`}
+                    fontWeight={w}
+                    fontStyle={currentParsed.italic ? "italic" : "normal"}
                     onClick={() =>
                       onSelectedChange({
                         ...selected,
@@ -545,11 +549,6 @@ export function FontPicker({
             </FilterBtn>
           ))}
         </div>
-        {inIframe && (
-          <p className="text-xs text-gray-500">
-            System fonts can&apos;t be read inside Onshape (browser blocks).
-          </p>
-        )}
       </section>
 
       {/* === Text + preview === */}
@@ -592,22 +591,30 @@ function FilterBtn({
   onClick,
   children,
   fontFamily,
+  fontWeight,
+  fontStyle,
 }: {
   active: boolean;
   disabled?: boolean;
   onClick: () => void;
   children: React.ReactNode;
   fontFamily?: string;
+  fontWeight?: number;
+  fontStyle?: "normal" | "italic";
 }) {
+  const style: React.CSSProperties = {};
+  if (fontFamily) style.fontFamily = fontFamily;
+  if (fontWeight) style.fontWeight = fontWeight;
+  if (fontStyle) style.fontStyle = fontStyle;
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
-      style={fontFamily ? { fontFamily } : undefined}
+      style={Object.keys(style).length > 0 ? style : undefined}
       className={`rounded border px-2 py-1 text-xs transition-colors ${
         active
-          ? "border-blue-600 bg-blue-600 text-white"
+          ? "border-[#1189e3] bg-[#1189e3] text-white"
           : "border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
       } ${disabled ? "cursor-not-allowed opacity-40" : ""}`}
     >
