@@ -150,7 +150,7 @@ function PanelInner() {
   const onInsert = useCallback(async () => {
     if (!curves || !onshape) return;
     if (!onshape.workspaceId) {
-      setError("Otevři dokument v read-write workspace, ne version.");
+      setError("Open the document in an editable workspace, not a version.");
       return;
     }
     setBusy(true);
@@ -181,7 +181,7 @@ function PanelInner() {
             : `HTTP ${res.status}`,
         );
       }
-      setInsertResult("Vloženo. V Onshape vyber sketch plane.");
+      setInsertResult("Inserted. Pick a sketch plane in Onshape.");
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
@@ -193,10 +193,10 @@ function PanelInner() {
     return (
       <main className="bg-white p-4 text-sm text-gray-900">
         <p className="mb-2 font-medium">
-          Tato stránka se otevírá uvnitř Onshape jako Element Panel.
+          This page is intended to open inside Onshape as an Element Panel.
         </p>
         <p className="text-gray-600">
-          Pokud testuješ standalone, použij{" "}
+          For a standalone preview use{" "}
           <a className="underline" href="/preview">
             /preview
           </a>
@@ -210,10 +210,10 @@ function PanelInner() {
     return (
       <main className="bg-white p-4 text-sm text-gray-900">
         <p className="font-medium">
-          Dokument je otevřený jako version/microversion, ne workspace.
+          Document is opened as a version/microversion, not a workspace.
         </p>
         <p className="mt-2 text-gray-600">
-          Pro vložení feature otevři dokument v editovatelném workspace.
+          Switch to an editable workspace to insert features.
         </p>
       </main>
     );
@@ -224,20 +224,20 @@ function PanelInner() {
       <header>
         <h1 className="text-base font-semibold">Google Fonts</h1>
         <p className="text-xs text-gray-500">
-          Vyber font → vlož text jako nativní sketch geometrii.
+          Pick a font, insert text as native sketch geometry.
         </p>
       </header>
 
       {authenticated === false && (
         <div className="rounded border border-amber-300 bg-amber-50 p-3 text-amber-900">
-          <p className="mb-2 font-medium">Připojení k Onshape</p>
+          <p className="mb-2 font-medium">Onshape connection</p>
           <button
             type="button"
             onClick={onLogin}
             disabled={authChecking}
             className="rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            Přihlásit přes OAuth
+            Sign in via OAuth
           </button>
         </div>
       )}
@@ -256,7 +256,7 @@ function PanelInner() {
           {/* Onshape insert controls */}
           <fieldset className="rounded border border-gray-200 p-3">
             <legend className="px-1 text-xs font-medium text-gray-700">
-              Onshape parametry
+              Onshape parameters
             </legend>
             <div className="grid grid-cols-2 gap-2">
               <label className="block">
@@ -307,7 +307,7 @@ function PanelInner() {
           {svg && (
             <div>
               <span className="text-xs font-medium text-gray-700">
-                Sketch preview (actual geometry)
+                Sketch preview
               </span>
               <div className="mt-1 aspect-[3/1] max-h-32 w-full rounded border border-gray-200 bg-white p-2">
                 <svg
@@ -325,14 +325,14 @@ function PanelInner() {
                 <p
                   className={`mt-1 text-xs ${payloadWarn ? "text-amber-700" : "text-gray-500"}`}
                 >
-                  {curves.glyphs.length} glyfů ·{" "}
+                  {curves.glyphs.length} glyphs ·{" "}
                   {curves.glyphs.reduce(
                     (s, g) =>
                       s + g.contours.reduce((cs, c) => cs + c.segments.length, 0),
                     0,
                   )}{" "}
-                  segmentů · {payloadKB} KB
-                  {payloadWarn && " — velký payload, zkrať text"}
+                  segments · {payloadKB} KB
+                  {payloadWarn && " — large payload, consider shorter text"}
                 </p>
               )}
             </div>
@@ -344,7 +344,7 @@ function PanelInner() {
             disabled={busy || !curves}
             className="rounded bg-blue-600 px-4 py-2 text-white hover:bg-blue-700 disabled:opacity-50"
           >
-            {busy ? "Vkládám..." : "Vložit do Part Studia"}
+            {busy ? "Inserting..." : "Insert into Part Studio"}
           </button>
 
           {insertResult && (
@@ -366,7 +366,7 @@ function PanelInner() {
 
 export default function PanelPage() {
   return (
-    <Suspense fallback={<main className="p-4 text-sm">Načítám…</main>}>
+    <Suspense fallback={<main className="p-4 text-sm">Loading…</main>}>
       <PanelInner />
     </Suspense>
   );

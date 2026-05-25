@@ -34,6 +34,16 @@ const CATEGORY_LABELS: Record<string, string> = {
   monospace: "Mono",
 };
 
+// Representative font for each category, rendered in that font on the
+// filter button so the user can read the category in its own style.
+const CATEGORY_PREVIEW_FONT: Record<string, string> = {
+  "sans-serif": "Roboto",
+  serif: "Playfair Display",
+  display: "Lobster",
+  handwriting: "Pacifico",
+  monospace: "Roboto Mono",
+};
+
 const COMMON_SUBSETS = [
   "latin",
   "latin-ext",
@@ -84,6 +94,23 @@ interface FontPickerProps {
   inIframe?: boolean;
 }
 
+/** Inject a single <link rel=stylesheet> to Google Fonts CSS so the
+ * category preview fonts render in their own face. Side-effect, idempotent. */
+function useCategoryPreviewFonts() {
+  useEffect(() => {
+    const id = "category-preview-fonts";
+    if (document.getElementById(id)) return;
+    const families = Array.from(new Set(Object.values(CATEGORY_PREVIEW_FONT)))
+      .map((f) => `family=${encodeURIComponent(f).replace(/%20/g, "+")}`)
+      .join("&");
+    const link = document.createElement("link");
+    link.id = id;
+    link.rel = "stylesheet";
+    link.href = `https://fonts.googleapis.com/css2?${families}&display=swap`;
+    document.head.appendChild(link);
+  }, []);
+}
+
 export function FontPicker({
   text,
   onTextChange,
@@ -101,6 +128,8 @@ export function FontPicker({
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const fontCacheRef = useRef<Map<string, Font>>(new Map());
+
+  useCategoryPreviewFonts();
 
   useEffect(() => {
     (async () => {
@@ -124,8 +153,7 @@ export function FontPicker({
     return Array.from(set);
   }, [families]);
 
-  // Subsets actually present in the loaded list, sorted by popularity heuristic
-  // (intersect with COMMON_SUBSETS first, then alphabetize the rest).
+  // Subsets actually present, sorted: known/common first, rest alphabetical.
   const subsets = useMemo(() => {
     const set = new Set<string>();
     for (const f of families) for (const s of f.subsets) set.add(s);
@@ -136,14 +164,22 @@ export function FontPicker({
     return [...known, ...rest];
   }, [families]);
 
+  // Filter by category + subset only (NOT search) — used for the available count.
+  const filteredByFacets = useMemo(() => {
+    return families
+      .filter((f) =>
+        categoryFilter === "all" ? true : f.category === categoryFilter,
+      )
+      .filter((f) => f.subsets.includes(subsetFilter));
+  }, [families, categoryFilter, subsetFilter]);
+
+  // Final filtered list including search query (used for the dropdown).
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return families
-      .filter((f) => (categoryFilter === "all" ? true : f.category === categoryFilter))
-      .filter((f) => f.subsets.includes(subsetFilter))
+    return filteredByFacets
       .filter((f) => (q ? f.family.toLowerCase().includes(q) : true))
-      .slice(0, 200);
-  }, [families, search, categoryFilter, subsetFilter]);
+      .slice(0, 100);
+  }, [filteredByFacets, search]);
 
   const selectedGoogleMeta: GoogleMeta | null = useMemo(() => {
     if (selected?.kind !== "google") return null;
@@ -173,7 +209,7 @@ export function FontPicker({
     return parseVariant(selected.variant);
   }, [selected]);
 
-  // Load FontFace into the document so we can preview natively.
+  // Load FontFace into the document so the preview renders natively.
   useEffect(() => {
     if (selected?.kind !== "google") return;
     const meta = families.find((f) => f.family === selected.family);
@@ -290,12 +326,25 @@ export function FontPicker({
     return undefined;
   }, [selected, currentParsed]);
 
+  const pickGoogle = useCallback(
+    (family: string) => {
+      const meta = families.find((f) => f.family === family);
+      if (!meta) return;
+      const v = meta.variants.includes("regular")
+        ? "regular"
+        : meta.variants[0];
+      onSelectedChange({ kind: "google", family, variant: v });
+      setSearch("");
+    },
+    [families, onSelectedChange],
+  );
+
   return (
     <div className="space-y-3">
       {googleEnabled === false && (
         <div className="rounded bg-amber-50 p-2 text-xs text-amber-900">
-          Google Fonts není dostupné (chybí <code>GOOGLE_FONTS_API_KEY</code> env
-          var). Můžeš použít upload níže.
+          Google Fonts unavailable (set <code>GOOGLE_FONTS_API_KEY</code>).
+          Upload a font below.
         </div>
       )}
 
@@ -304,22 +353,16 @@ export function FontPicker({
         <span className="text-xs font-medium text-gray-700">Search font</span>
         <input
           type="text"
-          list="google-families-list"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={
             googleEnabled
-              ? `Search ${families.length} fonts...`
+              ? `Search ${filteredByFacets.length} fonts...`
               : "Google Fonts disabled"
           }
           className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
           disabled={!googleEnabled}
         />
-        <datalist id="google-families-list">
-          {filtered.map((f) => (
-            <option key={f.family} value={f.family} />
-          ))}
-        </datalist>
       </label>
 
       {/* Category filter */}
@@ -338,6 +381,11 @@ export function FontPicker({
                 key={c}
                 active={categoryFilter === c}
                 onClick={() => setCategoryFilter(c)}
+                fontFamily={
+                  CATEGORY_PREVIEW_FONT[c]
+                    ? `"${CATEGORY_PREVIEW_FONT[c]}", ${c === "monospace" ? "monospace" : c === "serif" ? "serif" : "sans-serif"}`
+                    : undefined
+                }
               >
                 {CATEGORY_LABELS[c] ?? c}
               </FilterBtn>
@@ -364,28 +412,36 @@ export function FontPicker({
         </div>
       )}
 
-      {/* Pick exact family button — required because datalist doesn't auto-trigger */}
-      {search && googleEnabled && (
-        <button
-          type="button"
-          onClick={() => {
-            const exact = families.find(
-              (f) => f.family.toLowerCase() === search.trim().toLowerCase(),
-            );
-            const first = exact ?? filtered[0];
-            if (!first) {
-              setError(`No font matches "${search}"`);
-              return;
-            }
-            const v = first.variants.includes("regular")
-              ? "regular"
-              : first.variants[0];
-            onSelectedChange({ kind: "google", family: first.family, variant: v });
-          }}
-          className="rounded bg-blue-600 px-3 py-1.5 text-xs text-white hover:bg-blue-700"
-        >
-          Použít {filtered[0]?.family ?? "—"}
-        </button>
+      {/* Filtered family list */}
+      {googleEnabled && (
+        <div className="max-h-48 overflow-auto rounded border border-gray-200">
+          {filtered.length === 0 ? (
+            <div className="p-2 text-xs text-gray-500">No fonts match</div>
+          ) : (
+            <ul>
+              {filtered.map((f) => {
+                const isSelected =
+                  selected?.kind === "google" && selected.family === f.family;
+                return (
+                  <li key={f.family}>
+                    <button
+                      type="button"
+                      onClick={() => pickGoogle(f.family)}
+                      className={`w-full px-2 py-1.5 text-left text-sm hover:bg-blue-50 ${
+                        isSelected ? "bg-blue-100 font-medium" : ""
+                      }`}
+                    >
+                      {f.family}{" "}
+                      <span className="text-xs text-gray-400">
+                        ({CATEGORY_LABELS[f.category] ?? f.category})
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </div>
       )}
 
       {/* Style + Weight (only when Google font picked) */}
@@ -445,11 +501,11 @@ export function FontPicker({
       {/* Upload (secondary) */}
       <details>
         <summary className="cursor-pointer text-xs text-gray-600">
-          Vlastní font (.ttf/.otf)
+          Upload custom font (.ttf/.otf)
         </summary>
         <div className="mt-2 flex flex-wrap gap-2">
           <label className="cursor-pointer rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50">
-            Nahrát soubor
+            Upload file
             <input
               type="file"
               accept=".ttf,.otf"
@@ -479,7 +535,7 @@ export function FontPicker({
         </div>
         {inIframe && (
           <p className="mt-1 text-xs text-gray-500">
-            Systémové fonty nelze číst uvnitř Onshape (browser blokuje).
+            System fonts can&apos;t be read inside Onshape (browser blocks).
           </p>
         )}
       </details>
@@ -500,15 +556,11 @@ export function FontPicker({
         >
           {text || "The quick brown fox"}
         </div>
-        {loading && (
-          <p className="mt-1 text-xs text-gray-500">Načítám font...</p>
-        )}
+        {loading && <p className="mt-1 text-xs text-gray-500">Loading font...</p>}
       </div>
 
       {error && (
-        <div className="rounded bg-red-50 p-2 text-xs text-red-800">
-          {error}
-        </div>
+        <div className="rounded bg-red-50 p-2 text-xs text-red-800">{error}</div>
       )}
     </div>
   );
@@ -519,17 +571,20 @@ function FilterBtn({
   disabled,
   onClick,
   children,
+  fontFamily,
 }: {
   active: boolean;
   disabled?: boolean;
   onClick: () => void;
   children: React.ReactNode;
+  fontFamily?: string;
 }) {
   return (
     <button
       type="button"
       disabled={disabled}
       onClick={onClick}
+      style={fontFamily ? { fontFamily } : undefined}
       className={`rounded border px-2 py-1 text-xs transition-colors ${
         active
           ? "border-blue-600 bg-blue-600 text-white"
