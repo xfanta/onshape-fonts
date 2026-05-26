@@ -38,6 +38,9 @@ function SiteHeader() {
           </span>
         </Link>
         <nav className="flex items-center gap-5 text-sm text-gray-600">
+          <Link href="/" className="hover:text-gray-900">
+            Home
+          </Link>
           <Link href="/#features" className="hidden hover:text-gray-900 sm:block">
             Features
           </Link>
