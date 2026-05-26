@@ -12,12 +12,10 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
+/* The app is a single light theme. We intentionally do NOT honor
+   prefers-color-scheme: dark — every page (landing, /preview, /privacy,
+   /terms, panel) is designed against a white background, and inverting
+   the body bg under a dark-mode browser produced unreadable pages. */
 
 body {
   background: var(--background);
