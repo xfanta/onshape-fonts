@@ -338,11 +338,11 @@ export function FontPicker({
       <section className="space-y-3">
         <header>
           <h1 className="text-base font-semibold">Google Fonts</h1>
-          <p className="text-xs text-gray-500">
-            {googleEnabled === false
-              ? "Disabled — set GOOGLE_FONTS_API_KEY."
-              : `Browse ${families.length} fonts, filter by category and subset.`}
-          </p>
+          {googleEnabled === false && (
+            <p className="text-xs text-gray-500">
+              Disabled — set GOOGLE_FONTS_API_KEY.
+            </p>
+          )}
         </header>
 
         {googleEnabled === false && (
@@ -510,9 +510,6 @@ export function FontPicker({
       <section className="space-y-3">
         <header>
           <h1 className="text-base font-semibold">Upload custom font</h1>
-          <p className="text-xs text-gray-500">
-            Use a .ttf/.otf file from your computer.
-          </p>
         </header>
 
         <UploadDropZone onFile={onUpload} />
