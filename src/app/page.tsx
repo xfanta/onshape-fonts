@@ -180,7 +180,7 @@ export default function Home() {
             >
               GitHub
             </a>
-            <a className="lp-cta-sm" href="https://appstore.onshape.com/" target="_blank" rel="noreferrer">
+            <a className="lp-cta-sm" href="https://cad.onshape.com/appstore/apps/Utilities/6a0f2d2039092b5cfc0f712a" target="_blank" rel="noreferrer">
               Add to Onshape
             </a>
           </div>
@@ -206,7 +206,7 @@ export default function Home() {
             <div className="lp-ctas">
               <a
                 className="lp-cta"
-                href="https://appstore.onshape.com/"
+                href="https://cad.onshape.com/appstore/apps/Utilities/6a0f2d2039092b5cfc0f712a"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -386,7 +386,7 @@ export default function Home() {
                 </ul>
                 <a
                   className="lp-cta"
-                  href="https://appstore.onshape.com/"
+                  href="https://cad.onshape.com/appstore/apps/Utilities/6a0f2d2039092b5cfc0f712a"
                   target="_blank"
                   rel="noreferrer"
                 >
