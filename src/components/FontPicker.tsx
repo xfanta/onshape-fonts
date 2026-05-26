@@ -319,20 +319,6 @@ export function FontPicker({
     [onSelectedChange],
   );
 
-  const previewStyle = useMemo(() => {
-    if (selected?.kind === "google" && currentParsed) {
-      return {
-        fontFamily: `"${selected.family}", sans-serif`,
-        fontWeight: currentParsed.weight,
-        fontStyle: currentParsed.italic ? ("italic" as const) : ("normal" as const),
-      };
-    }
-    if (selected?.kind === "uploaded") {
-      return { fontFamily: `"${selected.family}", sans-serif` };
-    }
-    return undefined;
-  }, [selected, currentParsed]);
-
   const pickGoogle = useCallback(
     (family: string) => {
       const meta = families.find((f) => f.family === family);
@@ -345,8 +331,6 @@ export function FontPicker({
     },
     [families, onSelectedChange],
   );
-
-  const isUploaded = selected?.kind === "uploaded";
 
   return (
     <div className="space-y-6">
@@ -615,24 +599,9 @@ export function FontPicker({
             />
           </label>
         </div>
-        {isUploaded ? (
-          <div className="mt-1 min-h-12 rounded border border-dashed border-gray-300 bg-gray-50 p-3 text-xs italic text-gray-500">
-            Preview not available for local fonts.
-          </div>
-        ) : (
-          <div
-            className="mt-1 min-h-12 whitespace-pre-wrap rounded border border-gray-200 bg-white p-3 text-2xl"
-            style={{
-              ...previewStyle,
-              letterSpacing: `${letterSpacing}em`,
-              lineHeight: lineHeight,
-              textAlign: align,
-            }}
-          >
-            {text || "The quick brown fox"}
-          </div>
+        {loading && (
+          <p className="mt-2 text-xs text-gray-500">Loading font...</p>
         )}
-        {loading && <p className="mt-1 text-xs text-gray-500">Loading font...</p>}
       </section>
 
       {error && (

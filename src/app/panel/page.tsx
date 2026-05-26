@@ -8,9 +8,16 @@ import {
   useState,
 } from "react";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import type { Font } from "opentype.js";
 import { CurveData, TextAlign, textToCurves } from "@/lib/textToCurves";
 import { FontPicker, SelectedFont } from "@/components/FontPicker";
+import { SketchViewer } from "@/components/SketchViewer";
+
+// Lazy-load the paper.js-powered merge toggle (same reason as /preview).
+const MergeToggle = dynamic(() => import("../preview/MergeToggle"), {
+  ssr: false,
+});
 
 interface OnshapeContext {
   documentId: string;
@@ -57,7 +64,10 @@ function PanelInner() {
   const [selected, setSelected] = useState<SelectedFont | null>(null);
   const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
+  const [mergedCurves, setMergedCurves] = useState<CurveData | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const displayCurves = mergedCurves ?? curves;
   const [busy, setBusy] = useState(false);
   const [insertResult, setInsertResult] = useState<string | null>(null);
   const [inIframe, setInIframe] = useState(false);
@@ -125,12 +135,12 @@ function PanelInner() {
     }
   }, [font, text, letterSpacing, lineHeight, align]);
 
-  const payloadBytes = curves ? new Blob([JSON.stringify(curves)]).size : 0;
+  const payloadBytes = displayCurves ? new Blob([JSON.stringify(displayCurves)]).size : 0;
   const payloadKB = (payloadBytes / 1024).toFixed(1);
   const payloadWarn = payloadBytes > 80 * 1024;
 
   const onInsert = useCallback(async () => {
-    if (!curves || !onshape) return;
+    if (!displayCurves || !onshape) return;
     if (!onshape.workspaceId) {
       setError("Open the document in an editable workspace, not a version.");
       return;
@@ -146,7 +156,7 @@ function PanelInner() {
           documentId: onshape.documentId,
           workspaceId: onshape.workspaceId,
           elementId: onshape.elementId,
-          curveJson: JSON.stringify(curves),
+          curveJson: JSON.stringify(displayCurves),
           name: `Text "${text.slice(0, 40)}"`,
           onshapeUserId: onshape.userId ?? undefined,
         }),
@@ -165,7 +175,7 @@ function PanelInner() {
     } finally {
       setBusy(false);
     }
-  }, [curves, onshape, text]);
+  }, [displayCurves, onshape, text]);
 
   if (!onshape) {
     return (
@@ -230,12 +240,26 @@ function PanelInner() {
             inIframe={inIframe}
           />
 
-          {curves && (
+          <div>
+            <h2 className="mb-1 text-xs font-medium text-gray-700">
+              Sketch preview
+              <span className="ml-2 text-[11px] font-normal text-gray-400">
+                drag · scroll
+              </span>
+            </h2>
+            <div className="aspect-[3/2] w-full">
+              <SketchViewer curves={displayCurves} />
+            </div>
+          </div>
+
+          <MergeToggle curves={curves} onResult={setMergedCurves} />
+
+          {displayCurves && (
             <p
               className={`text-xs ${payloadWarn ? "text-amber-700" : "text-gray-500"}`}
             >
-              {curves.glyphs.length} glyphs ·{" "}
-              {curves.glyphs.reduce(
+              {displayCurves.glyphs.length} glyphs ·{" "}
+              {displayCurves.glyphs.reduce(
                 (s, g) =>
                   s + g.contours.reduce((cs, c) => cs + c.segments.length, 0),
                 0,
@@ -248,7 +272,7 @@ function PanelInner() {
           <button
             type="button"
             onClick={onInsert}
-            disabled={busy || !curves}
+            disabled={busy || !displayCurves}
             className="rounded bg-[#1189e3] px-4 py-2 text-white hover:bg-[#0d7ac9] disabled:opacity-50"
           >
             {busy ? "Inserting..." : "Insert into Part Studio"}
