@@ -408,12 +408,22 @@ export default function Home() {
         </section>
 
         <footer className="lp-foot">
-          <span>© 2026 · Built for the Onshape App Store</span>
+          <span>© 2026 · Free &amp; open source · Built for the Onshape App Store</span>
           <div>
-            <a href="#">Privacy</a>
-            <a href="#">Terms</a>
-            <a href="#">Support</a>
-            <a href="https://github.com/xfanta/onshape-fonts" target="_blank" rel="noreferrer">
+            <a href="/privacy">Privacy</a>
+            <a href="/terms">Terms</a>
+            <a
+              href="https://github.com/xfanta/onshape-fonts/issues"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Support
+            </a>
+            <a
+              href="https://github.com/xfanta/onshape-fonts"
+              target="_blank"
+              rel="noreferrer"
+            >
               GitHub
             </a>
           </div>
