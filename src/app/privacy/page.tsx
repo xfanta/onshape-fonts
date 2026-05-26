@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { SiteShell } from "@/components/SiteShell";
 
 export const metadata = {
   title: "Privacy — Google Fonts for Onshape",
@@ -7,12 +7,9 @@ export const metadata = {
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-white text-gray-800">
-    <main className="mx-auto max-w-3xl px-6 py-16 text-[15px] leading-relaxed">
-      <Link href="/" className="text-sm text-[#ed3338] hover:underline">
-        ← Back
-      </Link>
-      <h1 className="mt-6 text-4xl font-semibold tracking-tight text-gray-900">
+    <SiteShell>
+    <div className="mx-auto max-w-3xl px-6 py-16 text-[15px] leading-relaxed text-gray-800">
+      <h1 className="text-4xl font-semibold tracking-tight text-gray-900">
         Privacy
       </h1>
       <p className="mt-2 text-sm text-gray-500">
@@ -152,7 +149,7 @@ export default function PrivacyPage() {
           .
         </p>
       </section>
-    </main>
     </div>
+    </SiteShell>
   );
 }
