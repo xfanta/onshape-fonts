@@ -1,9 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import type { Font } from "opentype.js";
 import { CurveData, textToCurves } from "@/lib/textToCurves";
-import { mergeCurveContours } from "@/lib/mergeContours";
 import { curvesToDxf, curvesToStandaloneSvg } from "@/lib/exporters";
 import { FontPicker, SelectedFont } from "@/components/FontPicker";
 import { SketchViewer } from "@/components/SketchViewer";
@@ -15,12 +14,6 @@ export default function PreviewPage() {
   const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [merge, setMerge] = useState(false);
-
-  const outputCurves = useMemo(
-    () => (curves && merge ? mergeCurveContours(curves) : curves),
-    [curves, merge],
-  );
 
   useEffect(() => {
     if (!font || !text) {
@@ -35,51 +28,51 @@ export default function PreviewPage() {
     }
   }, [font, text]);
 
-  const payloadKB = outputCurves
-    ? (new Blob([JSON.stringify(outputCurves)]).size / 1024).toFixed(1)
+  const payloadKB = curves
+    ? (new Blob([JSON.stringify(curves)]).size / 1024).toFixed(1)
     : "0";
 
   const downloadJson = useCallback(() => {
-    if (!outputCurves) return;
-    const blob = new Blob([JSON.stringify(outputCurves, null, 2)], {
+    if (!curves) return;
+    const blob = new Blob([JSON.stringify(curves, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `curves-${outputCurves.text.replace(/[^\w]/g, "_")}.json`;
+    a.download = `curves-${curves.text.replace(/[^\w]/g, "_")}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [outputCurves]);
+  }, [curves]);
 
   const copyJson = useCallback(async () => {
-    if (!outputCurves) return;
-    await navigator.clipboard.writeText(JSON.stringify(outputCurves));
-  }, [outputCurves]);
+    if (!curves) return;
+    await navigator.clipboard.writeText(JSON.stringify(curves));
+  }, [curves]);
 
   const downloadFile = useCallback(
     (content: string, ext: string, mime: string) => {
-      if (!outputCurves) return;
+      if (!curves) return;
       const blob = new Blob([content], { type: mime });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${outputCurves.text.replace(/[^\w]/g, "_") || "text"}.${ext}`;
+      a.download = `${curves.text.replace(/[^\w]/g, "_") || "text"}.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
     },
-    [outputCurves],
+    [curves],
   );
 
   const downloadSvg = useCallback(() => {
-    if (!outputCurves) return;
-    downloadFile(curvesToStandaloneSvg(outputCurves), "svg", "image/svg+xml");
-  }, [outputCurves, downloadFile]);
+    if (!curves) return;
+    downloadFile(curvesToStandaloneSvg(curves), "svg", "image/svg+xml");
+  }, [curves, downloadFile]);
 
   const downloadDxf = useCallback(() => {
-    if (!outputCurves) return;
-    downloadFile(curvesToDxf(outputCurves), "dxf", "application/dxf");
-  }, [outputCurves, downloadFile]);
+    if (!curves) return;
+    downloadFile(curvesToDxf(curves), "dxf", "application/dxf");
+  }, [curves, downloadFile]);
 
   return (
     <SiteShell>
@@ -114,31 +107,13 @@ export default function PreviewPage() {
               </span>
             </h2>
             <div className="aspect-[4/3] w-full">
-              <SketchViewer curves={outputCurves} />
+              <SketchViewer curves={curves} />
             </div>
 
-            <label className="flex items-start gap-2 rounded border border-gray-200 p-2 text-xs text-gray-700">
-              <input
-                type="checkbox"
-                checked={merge}
-                onChange={(e) => setMerge(e.target.checked)}
-                className="mt-0.5"
-              />
-              <span>
-                <span className="font-medium">
-                  Merge overlapping contours per letter
-                </span>
-                <span className="block text-[11px] text-gray-500">
-                  One Onshape region per glyph (single Extrude click), but
-                  smooth Béziers become polylines.
-                </span>
-              </span>
-            </label>
-
-            {outputCurves && (
+            {curves && (
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
                 <span>
-                  {payloadKB} KB JSON · v{outputCurves.v} wire format
+                  {payloadKB} KB JSON · v{curves.v} wire format
                 </span>
                 <div className="flex flex-wrap gap-2">
                   <button
