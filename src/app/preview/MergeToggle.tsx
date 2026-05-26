@@ -61,15 +61,21 @@ export default function MergeToggle({ curves, onResult }: Props) {
           onChange={(e) => setEnabled(e.target.checked)}
           className="mt-0.5"
         />
-        <span className="font-medium">Merge overlapping contours per letter</span>
+        <span>
+          <span className="font-medium">Reduce overlapping contours per letter</span>
+          <span className="block text-[11px] font-normal text-gray-500">
+            Best-effort cleanup of self-overlapping glyph outlines.
+            Inner holes (o, p, q, b) are kept, but tangent contacts
+            (e crossbar, some serifs) may remain.
+          </span>
+        </span>
       </label>
       {enabled && (
         <div className="mt-1 ml-6 text-[11px] text-gray-500">
           {status === "computing" && "computing with paper.js…"}
           {status === "ok" && (
             <>
-              merged: <strong>{before}</strong> contours →{" "}
-              <strong>{after}</strong>
+              {before} contours → {after}
             </>
           )}
           {status === "error" && (
