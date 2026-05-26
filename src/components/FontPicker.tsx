@@ -584,7 +584,8 @@ export function FontPicker({
 
         <div className="mt-2 grid grid-cols-2 gap-2">
           <label className="block">
-            <span className="text-xs font-medium text-gray-700">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
+              <LetterSpacingIcon />
               Letter spacing (em)
             </span>
             <input
@@ -598,7 +599,8 @@ export function FontPicker({
             />
           </label>
           <label className="block">
-            <span className="text-xs font-medium text-gray-700">
+            <span className="flex items-center gap-1.5 text-xs font-medium text-gray-700">
+              <LineHeightIcon />
               Line height (em)
             </span>
             <input
@@ -703,6 +705,75 @@ function UploadDropZone({ onFile }: { onFile: (f: File) => void }) {
         }}
       />
     </label>
+  );
+}
+
+function LetterSpacingIcon() {
+  // Two glyph stand-ins ('A's as triangles) with a horizontal double-arrow
+  // between them showing the spacing axis.
+  return (
+    <svg viewBox="0 0 16 14" width="14" height="12" aria-hidden>
+      {/* Left A */}
+      <polyline
+        points="1,12 3.5,3 6,12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {/* Right A */}
+      <polyline
+        points="10,12 12.5,3 15,12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      {/* Double arrow between them */}
+      <line
+        x1="6.8"
+        y1="13"
+        x2="9.2"
+        y2="13"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+      <polyline
+        points="7.5,12.2 6.6,13 7.5,13.8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+      <polyline
+        points="8.5,12.2 9.4,13 8.5,13.8"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function LineHeightIcon() {
+  // Stacked text-line bars + vertical double-arrow on the left axis.
+  return (
+    <svg viewBox="0 0 16 14" width="14" height="12" aria-hidden>
+      {/* Three stacked baseline-style lines */}
+      <line x1="6" y1="2.5" x2="15" y2="2.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <line x1="6" y1="7" x2="15" y2="7" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <line x1="6" y1="11.5" x2="15" y2="11.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      {/* Vertical double arrow indicating height */}
+      <line x1="2.5" y1="3" x2="2.5" y2="11" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+      <polyline points="1.5,3.8 2.5,2.5 3.5,3.8" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round" />
+      <polyline points="1.5,10.2 2.5,11.5 3.5,10.2" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
   );
 }
 
