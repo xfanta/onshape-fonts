@@ -59,13 +59,44 @@ export default function PrivacyPage() {
           What we do <em>not</em> collect
         </h2>
         <ul className="list-disc space-y-2 pl-6">
-          <li>No analytics, no third-party trackers, no cookies beyond a
-            signed session cookie for the OAuth state.</li>
+          <li>No third-party trackers, no advertising cookies, no
+            cross-site fingerprinting.</li>
           <li>No content of your documents beyond what you explicitly
             insert.</li>
           <li>No marketing emails — we don&apos;t collect your email at
             all.</li>
         </ul>
+
+        <h2 className="mt-8 text-xl font-semibold text-gray-900">
+          Analytics
+        </h2>
+        <p>
+          We use <strong>Vercel Web Analytics</strong> to count page
+          views and see which browsers/countries our visitors come from.
+          It is <strong>cookieless</strong> — it stores nothing in your
+          browser, doesn&apos;t use localStorage, and doesn&apos;t track
+          individuals across sites. IP addresses are anonymized
+          server-side. We never see who you are, only aggregate counts.
+          Details:{" "}
+          <a
+            className="text-[#ed3338] underline"
+            href="https://vercel.com/docs/analytics/privacy-policy"
+            target="_blank"
+            rel="noreferrer"
+          >
+            Vercel Analytics privacy policy
+          </a>
+          .
+        </p>
+
+        <h2 className="mt-8 text-xl font-semibold text-gray-900">
+          Cookies
+        </h2>
+        <p>
+          The only cookie this site sets is a signed, httpOnly session
+          cookie used to hold the OAuth state during the Onshape sign-in
+          handshake. No analytics or advertising cookies.
+        </p>
 
         <h2 className="mt-8 text-xl font-semibold text-gray-900">
           Third parties
@@ -82,7 +113,8 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Vercel &amp; Upstash</strong> — host the app and store
-            OAuth tokens.
+            OAuth tokens. Vercel also collects the cookieless analytics
+            described below.
           </li>
         </ul>
 
