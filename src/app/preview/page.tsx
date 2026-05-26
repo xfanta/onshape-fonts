@@ -1,9 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import type { Font } from "opentype.js";
 import { CurveData, textToCurves } from "@/lib/textToCurves";
 import { curvesToDxf, curvesToStandaloneSvg } from "@/lib/exporters";
+
+// paper.js (used inside MergeToggle) statically pulls jsdom in one of
+// its conditional branches, so SSR bundling fails. ssr:false keeps it
+// strictly client-only and the module is split into its own chunk.
+const MergeToggle = dynamic(() => import("./MergeToggle"), { ssr: false });
 import { FontPicker, SelectedFont } from "@/components/FontPicker";
 import { SketchViewer } from "@/components/SketchViewer";
 import { SiteShell } from "@/components/SiteShell";
@@ -13,7 +19,10 @@ export default function PreviewPage() {
   const [selected, setSelected] = useState<SelectedFont | null>(null);
   const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
+  const [mergedCurves, setMergedCurves] = useState<CurveData | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const displayCurves = mergedCurves ?? curves;
 
   useEffect(() => {
     if (!font || !text) {
@@ -28,51 +37,51 @@ export default function PreviewPage() {
     }
   }, [font, text]);
 
-  const payloadKB = curves
-    ? (new Blob([JSON.stringify(curves)]).size / 1024).toFixed(1)
+  const payloadKB = displayCurves
+    ? (new Blob([JSON.stringify(displayCurves)]).size / 1024).toFixed(1)
     : "0";
 
   const downloadJson = useCallback(() => {
-    if (!curves) return;
-    const blob = new Blob([JSON.stringify(curves, null, 2)], {
+    if (!displayCurves) return;
+    const blob = new Blob([JSON.stringify(displayCurves, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `curves-${curves.text.replace(/[^\w]/g, "_")}.json`;
+    a.download = `curves-${displayCurves.text.replace(/[^\w]/g, "_")}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [curves]);
+  }, [displayCurves]);
 
   const copyJson = useCallback(async () => {
-    if (!curves) return;
-    await navigator.clipboard.writeText(JSON.stringify(curves));
-  }, [curves]);
+    if (!displayCurves) return;
+    await navigator.clipboard.writeText(JSON.stringify(displayCurves));
+  }, [displayCurves]);
 
   const downloadFile = useCallback(
     (content: string, ext: string, mime: string) => {
-      if (!curves) return;
+      if (!displayCurves) return;
       const blob = new Blob([content], { type: mime });
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${curves.text.replace(/[^\w]/g, "_") || "text"}.${ext}`;
+      a.download = `${displayCurves.text.replace(/[^\w]/g, "_") || "text"}.${ext}`;
       a.click();
       URL.revokeObjectURL(url);
     },
-    [curves],
+    [displayCurves],
   );
 
   const downloadSvg = useCallback(() => {
-    if (!curves) return;
-    downloadFile(curvesToStandaloneSvg(curves), "svg", "image/svg+xml");
-  }, [curves, downloadFile]);
+    if (!displayCurves) return;
+    downloadFile(curvesToStandaloneSvg(displayCurves), "svg", "image/svg+xml");
+  }, [displayCurves, downloadFile]);
 
   const downloadDxf = useCallback(() => {
-    if (!curves) return;
-    downloadFile(curvesToDxf(curves), "dxf", "application/dxf");
-  }, [curves, downloadFile]);
+    if (!displayCurves) return;
+    downloadFile(curvesToDxf(displayCurves), "dxf", "application/dxf");
+  }, [displayCurves, downloadFile]);
 
   return (
     <SiteShell>
@@ -107,13 +116,15 @@ export default function PreviewPage() {
               </span>
             </h2>
             <div className="aspect-[4/3] w-full">
-              <SketchViewer curves={curves} />
+              <SketchViewer curves={displayCurves} />
             </div>
 
-            {curves && (
+            <MergeToggle curves={curves} onResult={setMergedCurves} />
+
+            {displayCurves && (
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
                 <span>
-                  {payloadKB} KB JSON · v{curves.v} wire format
+                  {payloadKB} KB JSON · v{displayCurves.v} wire format
                 </span>
                 <div className="flex flex-wrap gap-2">
                   <button
