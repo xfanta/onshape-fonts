@@ -1,293 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import type { Font } from "opentype.js";
-import {
-  CurveData,
-  curvesBounds,
-  curvesToSvgPath,
-  loadFontFromBuffer,
-  textToCurves,
-} from "@/lib/textToCurves";
-
-type FontSource =
-  | { kind: "browser"; postscriptName: string; family: string; fullName: string }
-  | { kind: "uploaded"; family: string; key: string }
-  | { kind: "google"; family: string; variant: string };
-
-interface LoadedFont {
-  source: FontSource;
-  font: Font;
-}
-
-interface GoogleFontMeta {
-  family: string;
-  category: string;
-  variants: string[];
-}
-
-function DebugDump({ font, text }: { font: Font; text: string }) {
-  const [copied, setCopied] = useState(false);
-  const dump = useMemo(() => {
-    if (!text) return "";
-    return Array.from(text)
-      .map((ch) => {
-        const g = font.charToGlyph(ch);
-        const p = g.getPath(0, 0, font.unitsPerEm);
-        const cmds = (p.commands as unknown[])
-          .map((c) =>
-            typeof c === "object" && c !== null ? JSON.stringify(c) : String(c),
-          )
-          .join("\n  ");
-        return `--- "${ch}" (unicode ${ch.charCodeAt(0)}) — glyph ${g.index}, advance ${g.advanceWidth} ---\n  ${cmds}`;
-      })
-      .join("\n\n");
-  }, [font, text]);
-
-  return (
-    <>
-      <div className="mb-2 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={async () => {
-            await navigator.clipboard.writeText(dump);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
-          }}
-          className="rounded bg-gray-900 px-3 py-1.5 text-xs text-white hover:bg-gray-800"
-        >
-          {copied ? "✓ Copied" : "Copy to clipboard"}
-        </button>
-        <span className="text-xs text-gray-500">
-          {dump.length.toLocaleString()} znaků
-        </span>
-      </div>
-      <pre className="max-h-96 overflow-auto rounded bg-gray-50 p-3 text-xs">
-        {dump || "—"}
-      </pre>
-    </>
-  );
-}
+import { CurveData, textToCurves } from "@/lib/textToCurves";
+import { FontPicker, SelectedFont } from "@/components/FontPicker";
+import { SketchViewer } from "@/components/SketchViewer";
 
 export default function PreviewPage() {
-  const [text, setText] = useState("Hello");
-  const [browserFonts, setBrowserFonts] = useState<FontData[]>([]);
-  const [uploadedFonts, setUploadedFonts] = useState<
-    { key: string; family: string; buffer: ArrayBuffer }[]
-  >([]);
-  const [googleEnabled, setGoogleEnabled] = useState<boolean | null>(null);
-  const [googleFamilies, setGoogleFamilies] = useState<GoogleFontMeta[]>([]);
-  const [googleQuery, setGoogleQuery] = useState("");
-  const [googleVariant, setGoogleVariant] = useState("regular");
-  const [selectedKey, setSelectedKey] = useState<string>("");
-  const [loaded, setLoaded] = useState<LoadedFont | null>(null);
+  const [text, setText] = useState("The quick brown fox");
+  const [selected, setSelected] = useState<SelectedFont | null>(null);
+  const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [fontApiSupported, setFontApiSupported] = useState<boolean | null>(null);
-  const fontCacheRef = useRef<Map<string, Font>>(new Map());
 
   useEffect(() => {
-    setFontApiSupported(
-      typeof window !== "undefined" && typeof window.queryLocalFonts === "function",
-    );
-    (async () => {
-      try {
-        const res = await fetch("/api/google-fonts/list");
-        const json = await res.json();
-        setGoogleEnabled(!!json.enabled);
-        if (json.enabled && Array.isArray(json.families)) {
-          setGoogleFamilies(json.families);
-        }
-      } catch {
-        setGoogleEnabled(false);
-      }
-    })();
-  }, []);
-
-  const googleFiltered = useMemo(() => {
-    if (!googleQuery.trim()) return googleFamilies.slice(0, 50);
-    const q = googleQuery.toLowerCase();
-    return googleFamilies.filter((f) => f.family.toLowerCase().includes(q)).slice(0, 50);
-  }, [googleFamilies, googleQuery]);
-
-  const selectedGoogleFamily = useMemo(() => {
-    if (!selectedKey.startsWith("google:")) return null;
-    return selectedKey.slice("google:".length).split("::")[0];
-  }, [selectedKey]);
-
-  const googleVariants = useMemo(() => {
-    if (!selectedGoogleFamily) return [];
-    return googleFamilies.find((f) => f.family === selectedGoogleFamily)?.variants ?? [];
-  }, [googleFamilies, selectedGoogleFamily]);
-
-  const enumerateBrowserFonts = useCallback(async () => {
-    setError(null);
-    try {
-      if (typeof window.queryLocalFonts !== "function") {
-        throw new Error("Local Font Access API není v tomto prohlížeči dostupné.");
-      }
-      const fonts = await window.queryLocalFonts();
-      const seen = new Set<string>();
-      const deduped = fonts.filter((f) => {
-        if (seen.has(f.postscriptName)) return false;
-        seen.add(f.postscriptName);
-        return true;
-      });
-      deduped.sort((a, b) => a.fullName.localeCompare(b.fullName));
-      setBrowserFonts(deduped);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : String(e));
-    }
-  }, []);
-
-  const onUpload = useCallback(async (file: File) => {
-    setError(null);
-    try {
-      const buffer = await file.arrayBuffer();
-      const font = await loadFontFromBuffer(buffer);
-      const family = font.names.fontFamily?.en ?? file.name;
-      const key = `uploaded:${file.name}:${file.size}`;
-      fontCacheRef.current.set(key, font);
-      setUploadedFonts((prev) => {
-        if (prev.some((p) => p.key === key)) return prev;
-        return [...prev, { key, family, buffer }];
-      });
-      setSelectedKey(key);
-    } catch (e) {
-      setError(`Selhalo načtení fontu: ${e instanceof Error ? e.message : String(e)}`);
-    }
-  }, []);
-
-  const fontOptions = useMemo(() => {
-    const opts: { key: string; label: string; group: string }[] = [];
-    for (const f of uploadedFonts) {
-      opts.push({ key: f.key, label: f.family, group: "Uploaded" });
-    }
-    for (const f of browserFonts) {
-      opts.push({
-        key: `browser:${f.postscriptName}`,
-        label: f.fullName,
-        group: "Browser",
-      });
-    }
-    return opts;
-  }, [browserFonts, uploadedFonts]);
-
-  useEffect(() => {
-    if (!selectedKey) {
-      setLoaded(null);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        setError(null);
-        const cached = fontCacheRef.current.get(selectedKey);
-        if (cached) {
-          if (!cancelled) {
-            const upl = uploadedFonts.find((u) => u.key === selectedKey);
-            if (upl) {
-              setLoaded({
-                source: { kind: "uploaded", family: upl.family, key: upl.key },
-                font: cached,
-              });
-            } else if (selectedKey.startsWith("google:")) {
-              const [family, variant] = selectedKey.slice("google:".length).split("::");
-              setLoaded({
-                source: { kind: "google", family, variant: variant ?? "regular" },
-                font: cached,
-              });
-            } else {
-              const ps = selectedKey.slice("browser:".length);
-              const meta = browserFonts.find((b) => b.postscriptName === ps);
-              setLoaded({
-                source: {
-                  kind: "browser",
-                  postscriptName: ps,
-                  family: meta?.family ?? ps,
-                  fullName: meta?.fullName ?? ps,
-                },
-                font: cached,
-              });
-            }
-          }
-          return;
-        }
-        if (selectedKey.startsWith("browser:")) {
-          const ps = selectedKey.slice("browser:".length);
-          const meta = browserFonts.find((b) => b.postscriptName === ps);
-          if (!meta) throw new Error("Font není v seznamu.");
-          const blob = await meta.blob();
-          const buffer = await blob.arrayBuffer();
-          const font = await loadFontFromBuffer(buffer);
-          fontCacheRef.current.set(selectedKey, font);
-          if (!cancelled) {
-            setLoaded({
-              source: {
-                kind: "browser",
-                postscriptName: ps,
-                family: meta.family,
-                fullName: meta.fullName,
-              },
-              font,
-            });
-          }
-        } else if (selectedKey.startsWith("google:")) {
-          const [family, variant] = selectedKey.slice("google:".length).split("::");
-          const res = await fetch(
-            `/api/google-fonts/file?family=${encodeURIComponent(family)}&variant=${encodeURIComponent(variant ?? "regular")}`,
-          );
-          if (!res.ok) {
-            const txt = await res.text();
-            throw new Error(`Google font fetch ${res.status}: ${txt}`);
-          }
-          const buffer = await res.arrayBuffer();
-          const font = await loadFontFromBuffer(buffer);
-          fontCacheRef.current.set(selectedKey, font);
-          if (!cancelled) {
-            setLoaded({
-              source: {
-                kind: "google",
-                family,
-                variant: variant ?? "regular",
-              },
-              font,
-            });
-          }
-        }
-      } catch (e) {
-        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedKey, browserFonts, uploadedFonts]);
-
-  useEffect(() => {
-    if (!loaded || !text) {
+    if (!font || !text) {
       setCurves(null);
       return;
     }
     try {
       setError(null);
-      setCurves(textToCurves(text, loaded.font));
+      setCurves(textToCurves(text, font));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, [loaded, text]);
+  }, [font, text]);
 
-  const svg = useMemo(() => {
-    if (!curves) return null;
-    const b = curvesBounds(curves);
-    const pad = 0.05;
-    const w = Math.max(0.01, b.maxX - b.minX) + pad * 2;
-    const h = Math.max(0.01, b.maxY - b.minY) + pad * 2;
-    return {
-      viewBox: `${b.minX - pad} ${-b.maxY - pad} ${w} ${h}`,
-      path: curvesToSvgPath(curves),
-    };
-  }, [curves]);
+  const payloadKB = curves
+    ? (new Blob([JSON.stringify(curves)]).size / 1024).toFixed(1)
+    : "0";
 
   const downloadJson = useCallback(() => {
     if (!curves) return;
@@ -307,251 +49,242 @@ export default function PreviewPage() {
     await navigator.clipboard.writeText(JSON.stringify(curves));
   }, [curves]);
 
-  const payloadKB = curves
-    ? (new Blob([JSON.stringify(curves)]).size / 1024).toFixed(1)
-    : "0";
-
   return (
-    <main className="mx-auto max-w-5xl p-6 space-y-6">
-      <header>
-        <h1 className="text-2xl font-bold">Text → křivky (preview)</h1>
-        <p className="text-sm text-gray-600">
-          Fáze A: standalone preview pro ověření opentype.js → cubic Bézier
-          pipeline a generování fixture JSONů pro FeatureScript.
-        </p>
-      </header>
+    <div className="min-h-screen bg-white text-gray-900">
+      <Header />
 
-      <section className="grid gap-4 grid-cols-1 md:grid-cols-2">
-        <div className="space-y-3">
-          <label className="block">
-            <span className="text-sm font-medium">Text</span>
-            <input
-              type="text"
-              value={text}
-              onChange={(e) => setText(e.target.value)}
-              className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
-              placeholder="Napiš text..."
-            />
-          </label>
+      <main className="mx-auto max-w-7xl px-6 py-10">
+        <section className="mb-8">
+          <h1 className="text-3xl font-semibold tracking-tight">
+            Try in browser
+          </h1>
+          <p className="mt-2 text-sm text-gray-500">
+            Standalone playground for the text → sketch geometry
+            pipeline. Pick a font, type, and inspect the curves Onshape
+            would receive.
+          </p>
+        </section>
 
-          <div>
-            <span className="text-sm font-medium">Font</span>
-            <div className="mt-1 flex gap-2">
-              <select
-                value={selectedKey}
-                onChange={(e) => setSelectedKey(e.target.value)}
-                className="flex-1 rounded border border-gray-300 px-3 py-2"
-              >
-                <option value="">— vyber font —</option>
-                {uploadedFonts.length > 0 && (
-                  <optgroup label="Uploaded">
-                    {uploadedFonts.map((f) => (
-                      <option key={f.key} value={f.key}>
-                        {f.family}
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-                {browserFonts.length > 0 && (
-                  <optgroup label="Browser">
-                    {browserFonts.map((f) => (
-                      <option
-                        key={f.postscriptName}
-                        value={`browser:${f.postscriptName}`}
-                      >
-                        {f.fullName}
-                      </option>
-                    ))}
-                  </optgroup>
-                )}
-              </select>
+        <div className="grid gap-8 lg:grid-cols-[420px_1fr]">
+          {/* Left: font picker */}
+          <FontPickerCard
+            text={text}
+            setText={setText}
+            selected={selected}
+            setSelected={setSelected}
+            setFont={setFont}
+          />
+
+          {/* Right: interactive sketch + export */}
+          <div className="flex flex-col gap-3">
+            <h2 className="text-sm font-medium text-gray-700">
+              Sketch preview
+              <span className="ml-2 text-xs font-normal text-gray-400">
+                drag to pan · scroll to zoom
+              </span>
+            </h2>
+            <div className="aspect-[4/3] w-full">
+              <SketchViewer curves={curves} />
             </div>
 
-            <div className="mt-2 flex flex-wrap gap-2">
-              {fontApiSupported && (
-                <button
-                  type="button"
-                  onClick={enumerateBrowserFonts}
-                  className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700"
-                >
-                  Načíst systémové fonty
-                </button>
-              )}
-              <label className="cursor-pointer rounded border border-gray-300 px-3 py-1.5 text-sm hover:bg-gray-50">
-                Nahrát .ttf/.otf
-                <input
-                  type="file"
-                  accept=".ttf,.otf"
-                  className="hidden"
-                  onChange={(e) => {
-                    const f = e.target.files?.[0];
-                    if (f) onUpload(f);
-                    e.target.value = "";
-                  }}
-                />
-              </label>
-            </div>
-            {fontApiSupported === false && (
-              <p className="mt-2 text-xs text-gray-600">
-                Local Font Access API není podporované — použij upload .ttf/.otf.
-              </p>
-            )}
-            <p className="mt-1 text-xs text-gray-500">
-              Dostupných fontů: {fontOptions.length}
-            </p>
-          </div>
-
-          {googleEnabled && (
-            <div className="rounded border border-gray-200 p-3">
-              <span className="text-sm font-medium">Google Fonts</span>
-              <input
-                type="text"
-                list="google-families"
-                value={googleQuery}
-                onChange={(e) => setGoogleQuery(e.target.value)}
-                placeholder={`Hledat (${googleFamilies.length} fontů)...`}
-                className="mt-1 w-full rounded border border-gray-300 px-3 py-2 text-sm"
-              />
-              <datalist id="google-families">
-                {googleFiltered.map((f) => (
-                  <option key={f.family} value={f.family} />
-                ))}
-              </datalist>
-              {googleQuery && (
-                <div className="mt-2 flex gap-2">
+            {curves && (
+              <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
+                <span>{payloadKB} KB JSON · v{curves.v} wire format</span>
+                <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => {
-                      const exact = googleFamilies.find((f) => f.family === googleQuery);
-                      if (!exact) {
-                        setError(`Google font "${googleQuery}" neexistuje.`);
-                        return;
-                      }
-                      const v = exact.variants.includes("regular")
-                        ? "regular"
-                        : exact.variants[0] ?? "regular";
-                      setGoogleVariant(v);
-                      setSelectedKey(`google:${exact.family}::${v}`);
-                    }}
-                    className="rounded bg-blue-600 px-3 py-1.5 text-sm text-white hover:bg-blue-700"
+                    onClick={copyJson}
+                    className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-50"
                   >
-                    Použít
+                    Copy JSON
                   </button>
-                  {selectedGoogleFamily && googleVariants.length > 0 && (
-                    <select
-                      value={googleVariant}
-                      onChange={(e) => {
-                        const v = e.target.value;
-                        setGoogleVariant(v);
-                        setSelectedKey(`google:${selectedGoogleFamily}::${v}`);
-                      }}
-                      className="rounded border border-gray-300 px-2 py-1.5 text-sm"
-                    >
-                      {googleVariants.map((v) => (
-                        <option key={v} value={v}>
-                          {v}
-                        </option>
-                      ))}
-                    </select>
-                  )}
+                  <button
+                    type="button"
+                    onClick={downloadJson}
+                    className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-50"
+                  >
+                    Download .json
+                  </button>
                 </div>
-              )}
-            </div>
-          )}
-          {googleEnabled === false && (
-            <p className="text-xs text-gray-500">
-              Google Fonts: nakonfiguruj <code>GOOGLE_FONTS_API_KEY</code> v <code>.env.local</code>.
-            </p>
-          )}
-
-          {error && (
-            <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-800">
-              {error}
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <div className="aspect-square rounded border border-gray-200 bg-white p-4">
-            {svg ? (
-              <svg
-                viewBox={svg.viewBox}
-                className="h-full w-full"
-                xmlns="http://www.w3.org/2000/svg"
-              >
-                <g transform="scale(1 -1)">
-                  <path
-                    d={svg.path}
-                    fill="black"
-                    fillRule="evenodd"
-                    stroke="none"
-                  />
-                </g>
-              </svg>
-            ) : (
-              <div className="flex h-full items-center justify-center text-sm text-gray-400">
-                {loaded ? "Napiš text…" : "Vyber nebo nahraj font."}
               </div>
             )}
-          </div>
-          {curves && (
-            <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600">
-              <span>{curves.glyphs.length} glyfů</span>
-              <span>·</span>
-              <span>
-                {curves.glyphs.reduce(
-                  (s, g) =>
-                    s +
-                    g.contours.reduce((cs, c) => cs + c.segments.length, 0),
-                  0,
-                )}{" "}
-                segmentů
-              </span>
-              <span>·</span>
-              <span>{payloadKB} KB JSON</span>
-            </div>
-          )}
-        </div>
-      </section>
 
-      <section className="space-y-2">
-        <div className="flex flex-wrap gap-2">
-          <button
-            type="button"
-            disabled={!curves}
-            onClick={copyJson}
-            className="rounded bg-gray-900 px-3 py-1.5 text-sm text-white disabled:opacity-40"
-          >
-            Copy JSON
-          </button>
-          <button
-            type="button"
-            disabled={!curves}
-            onClick={downloadJson}
-            className="rounded border border-gray-300 px-3 py-1.5 text-sm disabled:opacity-40"
-          >
-            Download .json
-          </button>
+            {error && (
+              <div className="rounded bg-red-50 px-3 py-2 text-sm text-red-800">
+                {error}
+              </div>
+            )}
+
+            <details className="mt-2">
+              <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-700">
+                Wire format JSON
+              </summary>
+              <pre className="mt-2 max-h-72 overflow-auto rounded border border-gray-200 bg-gray-50 p-3 text-xs">
+                {curves ? JSON.stringify(curves, null, 2) : "—"}
+              </pre>
+            </details>
+
+            {font && (
+              <details>
+                <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-700">
+                  Debug: raw opentype.js path commands per glyph
+                </summary>
+                <DebugDump font={font} text={text} />
+              </details>
+            )}
+          </div>
         </div>
-        <details>
-          <summary className="cursor-pointer text-sm text-gray-700">
-            Náhled JSONu
-          </summary>
-          <pre className="mt-2 max-h-96 overflow-auto rounded bg-gray-50 p-3 text-xs">
-            {curves ? JSON.stringify(curves, null, 2) : "—"}
-          </pre>
-        </details>
-        <details>
-          <summary className="cursor-pointer text-sm text-gray-700">
-            Debug: raw opentype.js path commands per glyph
-          </summary>
-          {loaded && (
-            <div className="mt-2">
-              <DebugDump font={loaded.font} text={text} />
-            </div>
-          )}
-        </details>
-      </section>
-    </main>
+      </main>
+
+      <Footer />
+    </div>
+  );
+}
+
+function Header() {
+  return (
+    <header className="sticky top-0 z-10 border-b border-gray-200 bg-white">
+      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <span
+            className="flex h-7 w-7 items-center justify-center rounded-md p-[5px]"
+            style={{
+              background: "linear-gradient(135deg, #F48635 0%, #ed3338 100%)",
+            }}
+            aria-hidden
+          >
+            <svg viewBox="0 0 640 640" className="h-full w-full" fill="#fff">
+              <path d="M200 64C213.3 64 224 74.7 224 88L224 144L360 144C373.3 144 384 154.7 384 168C384 181.3 373.3 192 360 192L343.8 192L327.3 230.4C308.7 273.9 282.1 313.2 249.4 346.4C263.3 355.6 278 363.8 293.4 370.8L354.3 398.7L426.1 238.2C430 229.6 438.5 224 448 224C457.5 224 466 229.6 469.9 238.2L605.9 542.2C611.3 554.3 605.9 568.5 593.8 573.9C581.7 579.3 567.5 573.9 562.1 561.8L532.7 496L363.4 496L334 561.8C328.6 573.9 314.4 579.3 302.3 573.9C290.2 568.5 284.8 554.3 290.2 542.2L334.8 442.5L273.5 414.4C252 404.5 231.6 392.7 212.6 379.2C195.1 392.8 176.3 404.9 156.4 415.3L99.1 445.3C87.4 451.5 72.9 446.9 66.7 435.2C60.5 423.5 65.1 409 76.8 402.8L134 372.8C148 365.5 161.4 357.1 174.1 348C146.6 322.4 123 292.8 104.1 260C97.5 248.5 101.4 233.8 112.9 227.2C124.4 220.6 139.1 224.5 145.7 236C163.1 266.3 185.2 293.5 211.1 316.7C241.6 286.9 266.2 251.2 283.3 211.4L291.6 192L56 192C42.7 192 32 181.3 32 168C32 154.7 42.8 144 56 144L176 144L176 88C176 74.7 186.7 64 200 64zM511.2 448L448 306.8L384.8 448L511.2 448z" />
+            </svg>
+          </span>
+          <span className="text-sm font-semibold tracking-tight">
+            Google Fonts <span className="opacity-60">for Onshape</span>
+          </span>
+        </Link>
+        <nav className="flex items-center gap-5 text-sm text-gray-600">
+          <Link href="/" className="hover:text-gray-900">
+            Home
+          </Link>
+          <a
+            className="hover:text-gray-900"
+            href="https://github.com/xfanta/onshape-fonts"
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub
+          </a>
+          <a
+            href="https://cad.onshape.com/appstore/apps/Utilities/6a0f2d2039092b5cfc0f712a"
+            target="_blank"
+            rel="noreferrer"
+            className="rounded-md px-3 py-1.5 text-xs font-medium text-white"
+            style={{
+              background: "linear-gradient(135deg, #F48635 0%, #ed3338 100%)",
+            }}
+          >
+            Add to Onshape
+          </a>
+        </nav>
+      </div>
+    </header>
+  );
+}
+
+function Footer() {
+  return (
+    <footer className="border-t border-gray-200">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-6 text-xs text-gray-500">
+        <span>© 2026 · Free &amp; open source</span>
+        <div className="flex gap-5">
+          <Link href="/privacy" className="hover:text-gray-900">
+            Privacy
+          </Link>
+          <Link href="/terms" className="hover:text-gray-900">
+            Terms
+          </Link>
+          <a
+            href="https://github.com/xfanta/onshape-fonts/issues"
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-gray-900"
+          >
+            Support
+          </a>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
+// The FontPicker forwards the loaded opentype.js Font upward. We wrap it
+// in a small card so it sits nicely next to the SketchViewer column.
+function FontPickerCard({
+  text,
+  setText,
+  selected,
+  setSelected,
+  setFont,
+}: {
+  text: string;
+  setText: (t: string) => void;
+  selected: SelectedFont | null;
+  setSelected: (s: SelectedFont | null) => void;
+  setFont: (f: Font | null) => void;
+}) {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm">
+      <FontPicker
+        text={text}
+        onTextChange={setText}
+        selected={selected}
+        onSelectedChange={setSelected}
+        onFontLoaded={setFont}
+      />
+    </div>
+  );
+}
+
+function DebugDump({ font, text }: { font: Font; text: string }) {
+  const [copied, setCopied] = useState(false);
+  const dump = useMemo(() => {
+    if (!text) return "";
+    return Array.from(text)
+      .map((ch) => {
+        const g = font.charToGlyph(ch);
+        const p = g.getPath(0, 0, font.unitsPerEm);
+        const cmds = (p.commands as unknown[])
+          .map((c) =>
+            typeof c === "object" && c !== null
+              ? JSON.stringify(c)
+              : String(c),
+          )
+          .join("\n  ");
+        return `--- "${ch}" (unicode ${ch.charCodeAt(0)}) — glyph ${g.index}, advance ${g.advanceWidth} ---\n  ${cmds}`;
+      })
+      .join("\n\n");
+  }, [font, text]);
+
+  return (
+    <div className="mt-2">
+      <div className="mb-2 flex items-center gap-2">
+        <button
+          type="button"
+          onClick={async () => {
+            await navigator.clipboard.writeText(dump);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1500);
+          }}
+          className="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
+        >
+          {copied ? "✓ Copied" : "Copy to clipboard"}
+        </button>
+        <span className="text-xs text-gray-500">
+          {dump.length.toLocaleString()} chars
+        </span>
+      </div>
+      <pre className="max-h-96 overflow-auto rounded border border-gray-200 bg-gray-50 p-3 text-xs">
+        {dump || "—"}
+      </pre>
+    </div>
   );
 }
