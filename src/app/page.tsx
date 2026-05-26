@@ -328,7 +328,8 @@ export default function Home() {
                 <div className="lp-card-tag">Free</div>
                 <div className="lp-card-h">Google Fonts for Onshape</div>
                 <div className="lp-price-big">
-                  $0<span className="sub">/ forever</span>
+                  <span style={{ marginRight: "0.08em" }}>$</span>0
+                  <span className="sub">/ forever</span>
                 </div>
                 <p className="lp-card-sub">
                   Install in two clicks from the Onshape App Store.
