@@ -10,6 +10,7 @@ import {
 import { useSearchParams } from "next/navigation";
 import type { Font } from "opentype.js";
 import { CurveData, textToCurves } from "@/lib/textToCurves";
+import { mergeCurveContours } from "@/lib/mergeContours";
 import { FontPicker, SelectedFont } from "@/components/FontPicker";
 
 interface OnshapeContext {
@@ -58,6 +59,7 @@ function PanelInner() {
   const [busy, setBusy] = useState(false);
   const [insertResult, setInsertResult] = useState<string | null>(null);
   const [inIframe, setInIframe] = useState(false);
+  const [merge, setMerge] = useState(false);
 
   const refreshAuth = useCallback(async () => {
     setAuthChecking(true);
@@ -120,14 +122,22 @@ function PanelInner() {
     }
   }, [font, text]);
 
-  const payloadBytes = curves
-    ? new Blob([JSON.stringify(curves)]).size
+  // When merge is on, run boolean union of overlapping subpaths per glyph
+  // so Onshape sees one region per letter (one Extrude click per word).
+  // Trade-off: smooth Béziers become polylines (lots of line segments).
+  const outputCurves = useMemo(
+    () => (curves && merge ? mergeCurveContours(curves) : curves),
+    [curves, merge],
+  );
+
+  const payloadBytes = outputCurves
+    ? new Blob([JSON.stringify(outputCurves)]).size
     : 0;
   const payloadKB = (payloadBytes / 1024).toFixed(1);
   const payloadWarn = payloadBytes > 80 * 1024;
 
   const onInsert = useCallback(async () => {
-    if (!curves || !onshape) return;
+    if (!outputCurves || !onshape) return;
     if (!onshape.workspaceId) {
       setError("Open the document in an editable workspace, not a version.");
       return;
@@ -143,7 +153,7 @@ function PanelInner() {
           documentId: onshape.documentId,
           workspaceId: onshape.workspaceId,
           elementId: onshape.elementId,
-          curveJson: JSON.stringify(curves),
+          curveJson: JSON.stringify(outputCurves),
           name: `Text "${text.slice(0, 40)}"`,
           onshapeUserId: onshape.userId ?? undefined,
         }),
@@ -162,7 +172,7 @@ function PanelInner() {
     } finally {
       setBusy(false);
     }
-  }, [curves, onshape, text]);
+  }, [outputCurves, onshape, text]);
 
   if (!onshape) {
     return (
@@ -221,12 +231,30 @@ function PanelInner() {
             inIframe={inIframe}
           />
 
-          {curves && (
+          <label className="flex items-start gap-2 rounded border border-gray-200 p-2 text-xs text-gray-700">
+            <input
+              type="checkbox"
+              checked={merge}
+              onChange={(e) => setMerge(e.target.checked)}
+              className="mt-0.5"
+            />
+            <span>
+              <span className="font-medium">
+                Merge overlapping contours per letter
+              </span>
+              <span className="block text-[11px] text-gray-500">
+                One Onshape region per glyph (single Extrude click), but
+                Béziers become polylines.
+              </span>
+            </span>
+          </label>
+
+          {outputCurves && (
             <p
               className={`text-xs ${payloadWarn ? "text-amber-700" : "text-gray-500"}`}
             >
-              {curves.glyphs.length} glyphs ·{" "}
-              {curves.glyphs.reduce(
+              {outputCurves.glyphs.length} glyphs ·{" "}
+              {outputCurves.glyphs.reduce(
                 (s, g) =>
                   s + g.contours.reduce((cs, c) => cs + c.segments.length, 0),
                 0,
@@ -239,7 +267,7 @@ function PanelInner() {
           <button
             type="button"
             onClick={onInsert}
-            disabled={busy || !curves}
+            disabled={busy || !outputCurves}
             className="rounded bg-[#1189e3] px-4 py-2 text-white hover:bg-[#0d7ac9] disabled:opacity-50"
           >
             {busy ? "Inserting..." : "Insert into Part Studio"}

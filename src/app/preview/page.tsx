@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Font } from "opentype.js";
 import { CurveData, textToCurves } from "@/lib/textToCurves";
+import { mergeCurveContours } from "@/lib/mergeContours";
 import { FontPicker, SelectedFont } from "@/components/FontPicker";
 import { SketchViewer } from "@/components/SketchViewer";
 import { SiteShell } from "@/components/SiteShell";
@@ -13,6 +14,12 @@ export default function PreviewPage() {
   const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [merge, setMerge] = useState(false);
+
+  const outputCurves = useMemo(
+    () => (curves && merge ? mergeCurveContours(curves) : curves),
+    [curves, merge],
+  );
 
   useEffect(() => {
     if (!font || !text) {
@@ -27,27 +34,27 @@ export default function PreviewPage() {
     }
   }, [font, text]);
 
-  const payloadKB = curves
-    ? (new Blob([JSON.stringify(curves)]).size / 1024).toFixed(1)
+  const payloadKB = outputCurves
+    ? (new Blob([JSON.stringify(outputCurves)]).size / 1024).toFixed(1)
     : "0";
 
   const downloadJson = useCallback(() => {
-    if (!curves) return;
-    const blob = new Blob([JSON.stringify(curves, null, 2)], {
+    if (!outputCurves) return;
+    const blob = new Blob([JSON.stringify(outputCurves, null, 2)], {
       type: "application/json",
     });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `curves-${curves.text.replace(/[^\w]/g, "_")}.json`;
+    a.download = `curves-${outputCurves.text.replace(/[^\w]/g, "_")}.json`;
     a.click();
     URL.revokeObjectURL(url);
-  }, [curves]);
+  }, [outputCurves]);
 
   const copyJson = useCallback(async () => {
-    if (!curves) return;
-    await navigator.clipboard.writeText(JSON.stringify(curves));
-  }, [curves]);
+    if (!outputCurves) return;
+    await navigator.clipboard.writeText(JSON.stringify(outputCurves));
+  }, [outputCurves]);
 
   return (
     <SiteShell>
@@ -82,12 +89,32 @@ export default function PreviewPage() {
               </span>
             </h2>
             <div className="aspect-[4/3] w-full">
-              <SketchViewer curves={curves} />
+              <SketchViewer curves={outputCurves} />
             </div>
 
-            {curves && (
+            <label className="flex items-start gap-2 rounded border border-gray-200 p-2 text-xs text-gray-700">
+              <input
+                type="checkbox"
+                checked={merge}
+                onChange={(e) => setMerge(e.target.checked)}
+                className="mt-0.5"
+              />
+              <span>
+                <span className="font-medium">
+                  Merge overlapping contours per letter
+                </span>
+                <span className="block text-[11px] text-gray-500">
+                  One Onshape region per glyph (single Extrude click), but
+                  smooth Béziers become polylines.
+                </span>
+              </span>
+            </label>
+
+            {outputCurves && (
               <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-gray-500">
-                <span>{payloadKB} KB JSON · v{curves.v} wire format</span>
+                <span>
+                  {payloadKB} KB JSON · v{outputCurves.v} wire format
+                </span>
                 <div className="flex gap-2">
                   <button
                     type="button"
