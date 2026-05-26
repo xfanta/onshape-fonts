@@ -291,14 +291,15 @@ export default function Home() {
         <section className="lp-section" id="features">
           <div className="lp-section-h">
             <div className="lp-section-eyebrow">In context</div>
-            <h2>One sketch tool — every font, fully editable.</h2>
+            <h2>One sketch tool — every font, native geometry.</h2>
             <p>
               The add-in lives as a panel inside Onshape, alongside the
               standard sketch tools. Skip the export-and-import detour to a
-              vector editor: pick a font, type your text, click Insert and
-              you have a sketch you can size, rotate, place on any plane,
-              and tweak from the feature dialog like any other Onshape
-              feature.
+              vector editor: pick a font, type your text, click Insert. The
+              result lands as native sketch curves. Em-height, rotation,
+              origin point and offsets stay as live feature parameters so
+              you can resize, rotate, and reposition anytime — to change
+              the text, font, or layout, just open the panel again.
             </p>
           </div>
           <div className="lp-shots">
