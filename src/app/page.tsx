@@ -179,10 +179,11 @@ export default function Home() {
               into <em>real geometry.</em>
             </h1>
             <p className="lp-lead">
-              Browse the entire Google Fonts catalog or your own .ttf/.otf
-              files from inside Onshape and drop any glyph onto a sketch as
-              native curves — ready to extrude. No exports, no SVG
-              round-trips.
+              Bring all 1,900+ Google Fonts — or any .ttf / .otf you upload
+              — straight into your Part Studio. Pick a face, type your text,
+              click Insert. The result lands on the active sketch plane as
+              native curves you can resize, rotate, and reposition anytime
+              from the standard feature dialog.
             </p>
             <div className="lp-ctas">
               <a
@@ -290,11 +291,14 @@ export default function Home() {
         <section className="lp-section" id="features">
           <div className="lp-section-h">
             <div className="lp-section-eyebrow">In context</div>
-            <h2>Lives in your Part Studio. Just another sketch tool.</h2>
+            <h2>One sketch tool — every font, fully editable.</h2>
             <p>
-              The add-in renders as a panel inside Onshape. Pick a font, type,
-              click insert — the result lands as editable sketch curves on the
-              active plane.
+              The add-in lives as a panel inside Onshape, alongside the
+              standard sketch tools. Skip the export-and-import detour to a
+              vector editor: pick a font, type your text, click Insert and
+              you have a sketch you can size, rotate, place on any plane,
+              and tweak from the feature dialog like any other Onshape
+              feature.
             </p>
           </div>
           <div className="lp-shots">
@@ -346,6 +350,12 @@ export default function Home() {
                       <polyline points="3,8 7,12 13,4" />
                     </svg>
                     Native sketch geometry
+                  </li>
+                  <li>
+                    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.4">
+                      <polyline points="3,8 7,12 13,4" />
+                    </svg>
+                    Resize, rotate, reposition from the feature dialog
                   </li>
                   <li>
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.4">

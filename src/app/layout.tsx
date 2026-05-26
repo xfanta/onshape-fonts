@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Google Fonts for Onshape",
   description:
-    "Insert text from any of 1900+ Google Fonts (or your own .ttf/.otf) into an Onshape Part Studio as native editable sketch geometry.",
+    "Bring 1,900+ Google Fonts and your own .ttf/.otf files into Onshape. Pick a font, type your text, click Insert — the result lands on the active sketch plane as native curves you can resize, rotate, and reposition anytime.",
 };
 
 export default function RootLayout({

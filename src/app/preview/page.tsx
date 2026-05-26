@@ -91,9 +91,10 @@ export default function PreviewPage() {
             Preview
           </h1>
           <p className="mt-2 text-sm text-gray-500">
-            Standalone playground for the text → sketch geometry
-            pipeline. Pick a font, type, and inspect the curves Onshape
-            would receive.
+            See the add-in without leaving the browser. Pick any of
+            1,900+ Google Fonts or upload your own .ttf/.otf, type your
+            text, and explore exactly the sketch curves Onshape would
+            receive — pan, zoom, export to SVG or DXF.
           </p>
         </section>
 
