@@ -16,6 +16,8 @@ import { SiteShell } from "@/components/SiteShell";
 
 export default function PreviewPage() {
   const [text, setText] = useState("The quick brown fox");
+  const [letterSpacing, setLetterSpacing] = useState(0);
+  const [lineHeight, setLineHeight] = useState(1.2);
   const [selected, setSelected] = useState<SelectedFont | null>(null);
   const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
@@ -31,11 +33,11 @@ export default function PreviewPage() {
     }
     try {
       setError(null);
-      setCurves(textToCurves(text, font));
+      setCurves(textToCurves(text, font, { letterSpacing, lineHeight }));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, [font, text]);
+  }, [font, text, letterSpacing, lineHeight]);
 
   const payloadKB = displayCurves
     ? (new Blob([JSON.stringify(displayCurves)]).size / 1024).toFixed(1)
@@ -104,6 +106,10 @@ export default function PreviewPage() {
             <FontPickerCard
               text={text}
               setText={setText}
+              letterSpacing={letterSpacing}
+              setLetterSpacing={setLetterSpacing}
+              lineHeight={lineHeight}
+              setLineHeight={setLineHeight}
               selected={selected}
               setSelected={setSelected}
               setFont={setFont}
@@ -172,12 +178,20 @@ export default function PreviewPage() {
 function FontPickerCard({
   text,
   setText,
+  letterSpacing,
+  setLetterSpacing,
+  lineHeight,
+  setLineHeight,
   selected,
   setSelected,
   setFont,
 }: {
   text: string;
   setText: (t: string) => void;
+  letterSpacing: number;
+  setLetterSpacing: (v: number) => void;
+  lineHeight: number;
+  setLineHeight: (v: number) => void;
   selected: SelectedFont | null;
   setSelected: (s: SelectedFont | null) => void;
   setFont: (f: Font | null) => void;
@@ -187,6 +201,10 @@ function FontPickerCard({
       <FontPicker
         text={text}
         onTextChange={setText}
+        letterSpacing={letterSpacing}
+        onLetterSpacingChange={setLetterSpacing}
+        lineHeight={lineHeight}
+        onLineHeightChange={setLineHeight}
         selected={selected}
         onSelectedChange={setSelected}
         onFontLoaded={setFont}

@@ -77,6 +77,7 @@ function commandsToContours(
   commands: PathCommand[],
   unitsPerEm: number,
   xOffsetUnits: number,
+  yOffsetUnits: number,
 ): Contour[] {
   const contours: Contour[] = [];
   let current: Contour | null = null;
@@ -114,7 +115,7 @@ function commandsToContours(
 
   const xy = (x: number, y: number): [number, number] => [
     round6((x + xOffsetUnits) / unitsPerEm),
-    round6(-y / unitsPerEm),
+    round6((-y + yOffsetUnits) / unitsPerEm),
   ];
 
   for (const cmd of commands) {
@@ -178,33 +179,55 @@ function commandsToContours(
   return contours.filter((c) => c.segments.length > 0);
 }
 
-export function textToCurves(text: string, font: Font): CurveData {
+export interface TextLayoutOptions {
+  /** Extra space between characters, in em units (positive = wider, negative = tighter). */
+  letterSpacing?: number;
+  /** Distance between successive line baselines, in em units. Default 1.2. */
+  lineHeight?: number;
+}
+
+export function textToCurves(
+  text: string,
+  font: Font,
+  options: TextLayoutOptions = {},
+): CurveData {
+  const letterSpacing = options.letterSpacing ?? 0;
+  const lineHeight = options.lineHeight ?? 1.2;
   const unitsPerEm = font.unitsPerEm;
   const ascender = font.ascender;
   const descender = font.descender;
 
   const glyphs: GlyphCurves[] = [];
-  let xCursor = 0;
+  const lines = text.split("\n");
 
-  for (const char of Array.from(text)) {
-    const glyph = font.charToGlyph(char);
-    const path = glyph.getPath(0, 0, unitsPerEm);
-    const advanceUnits = glyph.advanceWidth ?? 0;
+  lines.forEach((line, lineIndex) => {
+    let xCursor = 0;
+    // Each subsequent line baseline is lineHeight em below the previous;
+    // in Y-up CAD coords that's a more-negative offset.
+    const yOffsetUnits = -lineIndex * lineHeight * unitsPerEm;
 
-    const contours = commandsToContours(
-      path.commands as PathCommand[],
-      unitsPerEm,
-      xCursor,
-    );
+    for (const char of Array.from(line)) {
+      const glyph = font.charToGlyph(char);
+      const path = glyph.getPath(0, 0, unitsPerEm);
+      const advanceUnits = glyph.advanceWidth ?? 0;
 
-    glyphs.push({
-      char,
-      advance: round6(advanceUnits / unitsPerEm),
-      contours,
-    });
+      const contours = commandsToContours(
+        path.commands as PathCommand[],
+        unitsPerEm,
+        xCursor,
+        yOffsetUnits,
+      );
 
-    xCursor += advanceUnits;
-  }
+      glyphs.push({
+        char,
+        advance: round6(advanceUnits / unitsPerEm),
+        contours,
+      });
+
+      // Advance + extra letter-spacing (converted from em → font units).
+      xCursor += advanceUnits + letterSpacing * unitsPerEm;
+    }
+  });
 
   return {
     v: 2,

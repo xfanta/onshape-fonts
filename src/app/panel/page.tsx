@@ -51,6 +51,8 @@ function PanelInner() {
   const [authenticated, setAuthenticated] = useState<boolean | null>(null);
   const [authChecking, setAuthChecking] = useState(false);
   const [text, setText] = useState("The quick brown fox");
+  const [letterSpacing, setLetterSpacing] = useState(0);
+  const [lineHeight, setLineHeight] = useState(1.2);
   const [selected, setSelected] = useState<SelectedFont | null>(null);
   const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
@@ -114,11 +116,11 @@ function PanelInner() {
     }
     try {
       setError(null);
-      setCurves(textToCurves(text, font));
+      setCurves(textToCurves(text, font, { letterSpacing, lineHeight }));
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, [font, text]);
+  }, [font, text, letterSpacing, lineHeight]);
 
   const payloadBytes = curves ? new Blob([JSON.stringify(curves)]).size : 0;
   const payloadKB = (payloadBytes / 1024).toFixed(1);
@@ -213,6 +215,10 @@ function PanelInner() {
           <FontPicker
             text={text}
             onTextChange={setText}
+            letterSpacing={letterSpacing}
+            onLetterSpacingChange={setLetterSpacing}
+            lineHeight={lineHeight}
+            onLineHeightChange={setLineHeight}
             selected={selected}
             onSelectedChange={setSelected}
             onFontLoaded={setFont}

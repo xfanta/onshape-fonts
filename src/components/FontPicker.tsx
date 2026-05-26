@@ -88,6 +88,10 @@ interface UploadedEntry {
 interface FontPickerProps {
   text: string;
   onTextChange: (t: string) => void;
+  letterSpacing: number;
+  onLetterSpacingChange: (v: number) => void;
+  lineHeight: number;
+  onLineHeightChange: (v: number) => void;
   selected: SelectedFont | null;
   onSelectedChange: (s: SelectedFont | null) => void;
   onFontLoaded: (f: Font | null) => void;
@@ -114,6 +118,10 @@ function useCategoryPreviewFonts() {
 export function FontPicker({
   text,
   onTextChange,
+  letterSpacing,
+  onLetterSpacingChange,
+  lineHeight,
+  onLineHeightChange,
   selected,
   onSelectedChange,
   onFontLoaded,
@@ -546,22 +554,58 @@ export function FontPicker({
       <section>
         <label className="block">
           <span className="text-xs font-medium text-gray-700">Text</span>
-          <input
-            type="text"
+          <textarea
             value={text}
             onChange={(e) => onTextChange(e.target.value)}
             placeholder="The quick brown fox"
-            className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+            rows={Math.min(6, Math.max(1, text.split("\n").length))}
+            className="mt-1 w-full resize-y rounded border border-gray-300 px-2 py-1.5 text-sm leading-snug"
           />
         </label>
+
+        <div className="mt-2 grid grid-cols-2 gap-2">
+          <label className="block">
+            <span className="text-xs font-medium text-gray-700">
+              Letter spacing (em)
+            </span>
+            <input
+              type="number"
+              step={0.01}
+              value={letterSpacing}
+              onChange={(e) =>
+                onLetterSpacingChange(Number(e.target.value) || 0)
+              }
+              className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+            />
+          </label>
+          <label className="block">
+            <span className="text-xs font-medium text-gray-700">
+              Line height (em)
+            </span>
+            <input
+              type="number"
+              step={0.1}
+              min={0.5}
+              value={lineHeight}
+              onChange={(e) =>
+                onLineHeightChange(Number(e.target.value) || 1.2)
+              }
+              className="mt-1 w-full rounded border border-gray-300 px-2 py-1.5 text-sm"
+            />
+          </label>
+        </div>
         {isUploaded ? (
           <div className="mt-1 min-h-12 rounded border border-dashed border-gray-300 bg-gray-50 p-3 text-xs italic text-gray-500">
             Preview not available for local fonts.
           </div>
         ) : (
           <div
-            className="mt-1 min-h-12 rounded border border-gray-200 bg-white p-3 text-2xl leading-tight"
-            style={previewStyle}
+            className="mt-1 min-h-12 whitespace-pre-wrap rounded border border-gray-200 bg-white p-3 text-2xl"
+            style={{
+              ...previewStyle,
+              letterSpacing: `${letterSpacing}em`,
+              lineHeight: lineHeight,
+            }}
           >
             {text || "The quick brown fox"}
           </div>
