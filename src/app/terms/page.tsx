@@ -7,7 +7,8 @@ export const metadata = {
 
 export default function TermsPage() {
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16 text-[15px] leading-relaxed text-gray-800">
+    <div className="min-h-screen bg-white text-gray-800">
+    <main className="mx-auto max-w-3xl px-6 py-16 text-[15px] leading-relaxed">
       <Link href="/" className="text-sm text-[#ed3338] hover:underline">
         ← Back
       </Link>
@@ -114,5 +115,6 @@ export default function TermsPage() {
         </p>
       </section>
     </main>
+    </div>
   );
 }
