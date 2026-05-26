@@ -18,8 +18,8 @@ export default function TermsPage() {
 
       <section className="mt-8 space-y-4">
         <p>
-          <strong>Google Fonts for Onshape</strong> (&quot;the add-in&quot;)
-          is an open-source project distributed free of charge. Source code:{" "}
+          <strong>Google Fonts for Onshape</strong>  (&quot;the add-in&quot;)
+          is an open-source project distributed free of charge.<br />Source code:{" "}
           <a
             className="text-[#ed3338] underline"
             href="https://github.com/xfanta/onshape-fonts"
