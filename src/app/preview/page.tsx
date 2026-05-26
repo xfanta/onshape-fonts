@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import type { Font } from "opentype.js";
-import { CurveData, textToCurves } from "@/lib/textToCurves";
+import { CurveData, TextAlign, textToCurves } from "@/lib/textToCurves";
 import { curvesToDxf, curvesToStandaloneSvg } from "@/lib/exporters";
 
 // paper.js (used inside MergeToggle) statically pulls jsdom in one of
@@ -18,6 +18,7 @@ export default function PreviewPage() {
   const [text, setText] = useState("The quick brown fox");
   const [letterSpacing, setLetterSpacing] = useState(0);
   const [lineHeight, setLineHeight] = useState(1.2);
+  const [align, setAlign] = useState<TextAlign>("left");
   const [selected, setSelected] = useState<SelectedFont | null>(null);
   const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
@@ -33,11 +34,13 @@ export default function PreviewPage() {
     }
     try {
       setError(null);
-      setCurves(textToCurves(text, font, { letterSpacing, lineHeight }));
+      setCurves(
+        textToCurves(text, font, { letterSpacing, lineHeight, align }),
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, [font, text, letterSpacing, lineHeight]);
+  }, [font, text, letterSpacing, lineHeight, align]);
 
   const payloadKB = displayCurves
     ? (new Blob([JSON.stringify(displayCurves)]).size / 1024).toFixed(1)
@@ -110,6 +113,8 @@ export default function PreviewPage() {
               setLetterSpacing={setLetterSpacing}
               lineHeight={lineHeight}
               setLineHeight={setLineHeight}
+              align={align}
+              setAlign={setAlign}
               selected={selected}
               setSelected={setSelected}
               setFont={setFont}
@@ -182,6 +187,8 @@ function FontPickerCard({
   setLetterSpacing,
   lineHeight,
   setLineHeight,
+  align,
+  setAlign,
   selected,
   setSelected,
   setFont,
@@ -192,6 +199,8 @@ function FontPickerCard({
   setLetterSpacing: (v: number) => void;
   lineHeight: number;
   setLineHeight: (v: number) => void;
+  align: TextAlign;
+  setAlign: (v: TextAlign) => void;
   selected: SelectedFont | null;
   setSelected: (s: SelectedFont | null) => void;
   setFont: (f: Font | null) => void;
@@ -205,6 +214,8 @@ function FontPickerCard({
         onLetterSpacingChange={setLetterSpacing}
         lineHeight={lineHeight}
         onLineHeightChange={setLineHeight}
+        align={align}
+        onAlignChange={setAlign}
         selected={selected}
         onSelectedChange={setSelected}
         onFontLoaded={setFont}

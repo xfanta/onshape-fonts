@@ -8,7 +8,7 @@ import {
   useState,
 } from "react";
 import type { Font } from "opentype.js";
-import { loadFontFromBuffer } from "@/lib/textToCurves";
+import { loadFontFromBuffer, type TextAlign } from "@/lib/textToCurves";
 
 export interface GoogleMeta {
   family: string;
@@ -92,6 +92,8 @@ interface FontPickerProps {
   onLetterSpacingChange: (v: number) => void;
   lineHeight: number;
   onLineHeightChange: (v: number) => void;
+  align: TextAlign;
+  onAlignChange: (v: TextAlign) => void;
   selected: SelectedFont | null;
   onSelectedChange: (s: SelectedFont | null) => void;
   onFontLoaded: (f: Font | null) => void;
@@ -122,6 +124,8 @@ export function FontPicker({
   onLetterSpacingChange,
   lineHeight,
   onLineHeightChange,
+  align,
+  onAlignChange,
   selected,
   onSelectedChange,
   onFontLoaded,
@@ -563,6 +567,21 @@ export function FontPicker({
           />
         </label>
 
+        <div className="mt-2">
+          <span className="text-xs font-medium text-gray-700">Align</span>
+          <div className="mt-1 flex flex-wrap gap-1">
+            {(["left", "center", "right", "justify"] as TextAlign[]).map((a) => (
+              <FilterBtn
+                key={a}
+                active={align === a}
+                onClick={() => onAlignChange(a)}
+              >
+                <AlignIcon kind={a} />
+              </FilterBtn>
+            ))}
+          </div>
+        </div>
+
         <div className="mt-2 grid grid-cols-2 gap-2">
           <label className="block">
             <span className="text-xs font-medium text-gray-700">
@@ -605,6 +624,7 @@ export function FontPicker({
               ...previewStyle,
               letterSpacing: `${letterSpacing}em`,
               lineHeight: lineHeight,
+              textAlign: align,
             }}
           >
             {text || "The quick brown fox"}
@@ -683,6 +703,54 @@ function UploadDropZone({ onFile }: { onFile: (f: File) => void }) {
         }}
       />
     </label>
+  );
+}
+
+function AlignIcon({ kind }: { kind: TextAlign }) {
+  // Four horizontal lines representing each alignment. Lengths chosen to
+  // visually communicate left/right/center/justify.
+  const lines: Record<TextAlign, [number, number, number][]> = {
+    // [y, x1, x2]
+    left: [
+      [3, 1, 13],
+      [6, 1, 9],
+      [9, 1, 13],
+      [12, 1, 7],
+    ],
+    right: [
+      [3, 1, 13],
+      [6, 5, 13],
+      [9, 1, 13],
+      [12, 7, 13],
+    ],
+    center: [
+      [3, 1, 13],
+      [6, 3, 11],
+      [9, 1, 13],
+      [12, 4, 10],
+    ],
+    justify: [
+      [3, 1, 13],
+      [6, 1, 13],
+      [9, 1, 13],
+      [12, 1, 13],
+    ],
+  };
+  return (
+    <svg viewBox="0 0 14 15" width="14" height="15" aria-label={kind}>
+      {lines[kind].map(([y, x1, x2], i) => (
+        <line
+          key={i}
+          x1={x1}
+          y1={y}
+          x2={x2}
+          y2={y}
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinecap="round"
+        />
+      ))}
+    </svg>
   );
 }
 

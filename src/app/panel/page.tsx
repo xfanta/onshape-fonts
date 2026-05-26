@@ -9,7 +9,7 @@ import {
 } from "react";
 import { useSearchParams } from "next/navigation";
 import type { Font } from "opentype.js";
-import { CurveData, textToCurves } from "@/lib/textToCurves";
+import { CurveData, TextAlign, textToCurves } from "@/lib/textToCurves";
 import { FontPicker, SelectedFont } from "@/components/FontPicker";
 
 interface OnshapeContext {
@@ -53,6 +53,7 @@ function PanelInner() {
   const [text, setText] = useState("The quick brown fox");
   const [letterSpacing, setLetterSpacing] = useState(0);
   const [lineHeight, setLineHeight] = useState(1.2);
+  const [align, setAlign] = useState<TextAlign>("left");
   const [selected, setSelected] = useState<SelectedFont | null>(null);
   const [font, setFont] = useState<Font | null>(null);
   const [curves, setCurves] = useState<CurveData | null>(null);
@@ -116,11 +117,13 @@ function PanelInner() {
     }
     try {
       setError(null);
-      setCurves(textToCurves(text, font, { letterSpacing, lineHeight }));
+      setCurves(
+        textToCurves(text, font, { letterSpacing, lineHeight, align }),
+      );
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
     }
-  }, [font, text, letterSpacing, lineHeight]);
+  }, [font, text, letterSpacing, lineHeight, align]);
 
   const payloadBytes = curves ? new Blob([JSON.stringify(curves)]).size : 0;
   const payloadKB = (payloadBytes / 1024).toFixed(1);
@@ -219,6 +222,8 @@ function PanelInner() {
             onLetterSpacingChange={setLetterSpacing}
             lineHeight={lineHeight}
             onLineHeightChange={setLineHeight}
+            align={align}
+            onAlignChange={setAlign}
             selected={selected}
             onSelectedChange={setSelected}
             onFontLoaded={setFont}

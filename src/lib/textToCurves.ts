@@ -179,11 +179,15 @@ function commandsToContours(
   return contours.filter((c) => c.segments.length > 0);
 }
 
+export type TextAlign = "left" | "right" | "center" | "justify";
+
 export interface TextLayoutOptions {
   /** Extra space between characters, in em units (positive = wider, negative = tighter). */
   letterSpacing?: number;
   /** Distance between successive line baselines, in em units. Default 1.2. */
   lineHeight?: number;
+  /** Horizontal alignment for multi-line text. Default "left". */
+  align?: TextAlign;
 }
 
 export function textToCurves(
@@ -193,23 +197,67 @@ export function textToCurves(
 ): CurveData {
   const letterSpacing = options.letterSpacing ?? 0;
   const lineHeight = options.lineHeight ?? 1.2;
+  const align: TextAlign = options.align ?? "left";
   const unitsPerEm = font.unitsPerEm;
   const ascender = font.ascender;
   const descender = font.descender;
 
-  const glyphs: GlyphCurves[] = [];
-  const lines = text.split("\n");
+  const rawLines = text.split("\n");
 
-  lines.forEach((line, lineIndex) => {
-    let xCursor = 0;
-    // Each subsequent line baseline is lineHeight em below the previous;
-    // in Y-up CAD coords that's a more-negative offset.
+  // First pass — measure each line's natural width so we can compute
+  // alignment offsets up front.
+  const measurements = rawLines.map((line) => {
+    const chars = Array.from(line);
+    const advances: number[] = [];
+    let width = 0;
+    for (const ch of chars) {
+      const g = font.charToGlyph(ch);
+      const adv = g.advanceWidth ?? 0;
+      advances.push(adv);
+      width += adv;
+    }
+    if (chars.length > 1) {
+      width += (chars.length - 1) * letterSpacing * unitsPerEm;
+    }
+    return { chars, advances, width };
+  });
+
+  const maxLineWidth = measurements.reduce(
+    (m, x) => Math.max(m, x.width),
+    0,
+  );
+
+  const glyphs: GlyphCurves[] = [];
+
+  measurements.forEach((m, lineIndex) => {
+    // Per-line alignment offset.
+    let lineStartX = 0;
+    let extraPerGap = 0;
+    const isLastLine = lineIndex === measurements.length - 1;
+
+    switch (align) {
+      case "right":
+        lineStartX = maxLineWidth - m.width;
+        break;
+      case "center":
+        lineStartX = (maxLineWidth - m.width) / 2;
+        break;
+      case "justify":
+        // Distribute slack across inter-glyph gaps; last line stays left
+        // (standard typographic convention).
+        if (!isLastLine && m.chars.length > 1 && m.width < maxLineWidth) {
+          extraPerGap = (maxLineWidth - m.width) / (m.chars.length - 1);
+        }
+        break;
+      // "left" → 0
+    }
+
+    let xCursor = lineStartX;
     const yOffsetUnits = -lineIndex * lineHeight * unitsPerEm;
 
-    for (const char of Array.from(line)) {
+    m.chars.forEach((char, i) => {
       const glyph = font.charToGlyph(char);
       const path = glyph.getPath(0, 0, unitsPerEm);
-      const advanceUnits = glyph.advanceWidth ?? 0;
 
       const contours = commandsToContours(
         path.commands as PathCommand[],
@@ -220,13 +268,12 @@ export function textToCurves(
 
       glyphs.push({
         char,
-        advance: round6(advanceUnits / unitsPerEm),
+        advance: round6(m.advances[i] / unitsPerEm),
         contours,
       });
 
-      // Advance + extra letter-spacing (converted from em → font units).
-      xCursor += advanceUnits + letterSpacing * unitsPerEm;
-    }
+      xCursor += m.advances[i] + letterSpacing * unitsPerEm + extraPerGap;
+    });
   });
 
   return {
