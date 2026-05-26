@@ -52,7 +52,8 @@ interface Props {
 export function SketchViewer({ curves }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewBox, setViewBox] = useState<ViewBox | null>(null);
-  const [showPoints, setShowPoints] = useState(true);
+  const [showPoints, setShowPoints] = useState(false);
+  const [filled, setFilled] = useState(true);
   const viewBoxRef = useRef<ViewBox | null>(null);
   viewBoxRef.current = viewBox;
 
@@ -263,29 +264,44 @@ export function SketchViewer({ curves }: Props) {
           strokeWidth={axisStroke}
         />
 
-        {/* Curves */}
-        <path
-          d={pathD}
-          fill="none"
-          stroke="#1189e3"
-          strokeWidth={curveStroke}
-          strokeLinejoin="round"
-          strokeLinecap="round"
-        />
-
-        {/* Anchor points */}
-        {showPoints &&
-          points.map((p, i) => (
-            <circle
-              key={i}
-              cx={p[0]}
-              cy={p[1]}
-              r={pointR}
-              fill="#1189e3"
-              stroke="#fff"
-              strokeWidth={pointR * 0.3}
+        {/* Curves — fill mode shows the merged letterform (overlapping
+            contours unified by winding rule, just like Onshape's region
+            detector). Wireframe mode shows construction geometry with
+            anchor points. */}
+        {filled ? (
+          <path
+            d={pathD}
+            fill="#1189e3"
+            fillRule="nonzero"
+            stroke="#1189e3"
+            strokeWidth={curveStroke * 0.5}
+            strokeLinejoin="round"
+            strokeLinecap="round"
+          />
+        ) : (
+          <>
+            <path
+              d={pathD}
+              fill="none"
+              stroke="#1189e3"
+              strokeWidth={curveStroke}
+              strokeLinejoin="round"
+              strokeLinecap="round"
             />
-          ))}
+            {showPoints &&
+              points.map((p, i) => (
+                <circle
+                  key={i}
+                  cx={p[0]}
+                  cy={p[1]}
+                  r={pointR}
+                  fill="#1189e3"
+                  stroke="#fff"
+                  strokeWidth={pointR * 0.3}
+                />
+              ))}
+          </>
+        )}
       </svg>
 
       {/* Floating controls */}
@@ -319,11 +335,21 @@ export function SketchViewer({ curves }: Props) {
         <label className="flex items-center gap-1 px-1 py-1">
           <input
             type="checkbox"
-            checked={showPoints}
-            onChange={(e) => setShowPoints(e.target.checked)}
+            checked={filled}
+            onChange={(e) => setFilled(e.target.checked)}
           />
-          <span>Points</span>
+          <span>Filled</span>
         </label>
+        {!filled && (
+          <label className="flex items-center gap-1 px-1 py-1">
+            <input
+              type="checkbox"
+              checked={showPoints}
+              onChange={(e) => setShowPoints(e.target.checked)}
+            />
+            <span>Points</span>
+          </label>
+        )}
       </div>
 
       {/* Stats overlay */}
