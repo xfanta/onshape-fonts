@@ -37,7 +37,8 @@ export default function PrivacyPage() {
             issued by Onshape after you click <em>Sign in via OAuth</em>.
             Stored in Vercel KV (Upstash Redis). The token lets the backend
             call the Onshape REST API on your behalf to create the
-            <em>Text to Sketch</em> feature in your active Part Studio.
+            <em>Google Fonts to Sketch</em> feature in your active Part
+            Studio.
           </li>
           <li>
             <strong>The document context</strong> you have open

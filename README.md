@@ -40,8 +40,8 @@ pnpm dev
 ### 2. Manuální test FS feature (Fáze B verifikace)
 
 1. V jiném dokumentu vytvoř **Part Studio**.
-2. `Insert → Custom Feature → ⊕ Add custom features → ⊕ Import...` → vlož URL publikovaného dokumentu, vyber `Text to Sketch`.
-3. Klikni na tlačítko `Text to Sketch` v paletě features.
+2. `Insert → Custom Feature → ⊕ Add custom features → ⊕ Import...` → vlož URL publikovaného dokumentu, vyber `Google Fonts to Sketch`.
+3. Klikni na tlačítko `Google Fonts to Sketch` v paletě features.
 4. V dialogu vlož do `Curve data (JSON)` obsah některého z [`fixtures/`](fixtures/) souborů (např. `arial-O.json`).
 5. Vyber sketch plane (např. `Top`) a klikni zelený check.
 6. **Co ověřit:**
@@ -60,7 +60,7 @@ pnpm dev
    - Type: `Element Right Panel`
    - Context: `Part Studio`
    - Action URL: `https://<tvoje-vercel-domena>/panel`
-   - Name: cokoliv (např. "Text to Sketch")
+   - Name: cokoliv (např. "Google Fonts to Sketch")
 
 ### 4. (Volitelné) Google Fonts API key
 

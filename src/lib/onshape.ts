@@ -226,7 +226,7 @@ export async function addTextToSketchFeature(
       btType: "BTMFeature-134",
       featureType: env.ONSHAPE_FS_FEATURE_NAME,
       namespace,
-      name: options.name ?? "Text to Sketch",
+      name: options.name ?? "Google Fonts to Sketch",
       suppressed: false,
       parameters: [
         {

@@ -519,36 +519,27 @@ export function FontPicker({
           </p>
         </header>
 
-        <div className="flex flex-wrap gap-2">
-          <label className="cursor-pointer rounded border border-gray-300 px-3 py-1.5 text-xs hover:bg-gray-50">
-            Choose file
-            <input
-              type="file"
-              accept=".ttf,.otf"
-              className="hidden"
-              onChange={(e) => {
-                const f = e.target.files?.[0];
-                if (f) onUpload(f);
-                e.target.value = "";
-              }}
-            />
-          </label>
-          {uploaded.map((u) => (
-            <FilterBtn
-              key={u.key}
-              active={selected?.kind === "uploaded" && selected.key === u.key}
-              onClick={() =>
-                onSelectedChange({
-                  kind: "uploaded",
-                  key: u.key,
-                  family: u.family,
-                })
-              }
-            >
-              {u.family}
-            </FilterBtn>
-          ))}
-        </div>
+        <UploadDropZone onFile={onUpload} />
+
+        {uploaded.length > 0 && (
+          <div className="flex flex-wrap gap-2">
+            {uploaded.map((u) => (
+              <FilterBtn
+                key={u.key}
+                active={selected?.kind === "uploaded" && selected.key === u.key}
+                onClick={() =>
+                  onSelectedChange({
+                    kind: "uploaded",
+                    key: u.key,
+                    family: u.family,
+                  })
+                }
+              >
+                {u.family}
+              </FilterBtn>
+            ))}
+          </div>
+        )}
       </section>
 
       {/* === Text + preview === */}
@@ -582,6 +573,72 @@ export function FontPicker({
         <div className="rounded bg-red-50 p-2 text-xs text-red-800">{error}</div>
       )}
     </div>
+  );
+}
+
+function UploadDropZone({ onFile }: { onFile: (f: File) => void }) {
+  const [dragging, setDragging] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const acceptFile = useCallback(
+    (file: File | undefined | null) => {
+      if (!file) return;
+      const ok = /\.(ttf|otf)$/i.test(file.name);
+      if (!ok) return;
+      onFile(file);
+    },
+    [onFile],
+  );
+
+  return (
+    <label
+      htmlFor="font-dropzone-input"
+      onDragOver={(e) => {
+        e.preventDefault();
+        setDragging(true);
+      }}
+      onDragLeave={() => setDragging(false)}
+      onDrop={(e) => {
+        e.preventDefault();
+        setDragging(false);
+        const f = e.dataTransfer.files?.[0];
+        acceptFile(f);
+      }}
+      className={`flex cursor-pointer flex-col items-center justify-center gap-1 rounded-md border-2 border-dashed px-4 py-6 text-center text-xs transition-colors ${
+        dragging
+          ? "border-[#1189e3] bg-[#1189e3]/5 text-[#1189e3]"
+          : "border-gray-300 bg-gray-50 text-gray-500 hover:border-gray-400 hover:bg-gray-100"
+      }`}
+    >
+      <svg
+        className="h-5 w-5"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M12 4v12" />
+        <path d="M8 8l4-4 4 4" />
+        <path d="M4 20h16" />
+      </svg>
+      <span className="font-medium">
+        Drop a .ttf or .otf here
+      </span>
+      <span className="text-[11px] opacity-70">or click to browse</span>
+      <input
+        id="font-dropzone-input"
+        ref={inputRef}
+        type="file"
+        accept=".ttf,.otf"
+        className="hidden"
+        onChange={(e) => {
+          acceptFile(e.target.files?.[0]);
+          e.target.value = "";
+        }}
+      />
+    </label>
   );
 }
 

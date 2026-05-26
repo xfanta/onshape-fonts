@@ -39,7 +39,7 @@ export const TEXT_OFFSET_BOUNDS =
     (yard)       : 0.0
 } as LengthBoundSpec;
 
-annotation { "Feature Type Name" : "Text to Sketch" }
+annotation { "Feature Type Name" : "Google Fonts to Sketch" }
 export const textToSketch = defineFeature(function(context is Context, id is Id, definition is map)
     precondition
     {
