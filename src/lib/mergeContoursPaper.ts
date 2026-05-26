@@ -87,18 +87,28 @@ function mergeGlyph(glyph: GlyphCurves, paper: Paper): GlyphCurves {
 
   let newContours: Contour[];
   try {
-    const compound = new paper.CompoundPath({ children: paths }) as paper.CompoundPath & {
-      resolveCrossings(): paper.PathItem;
-      reorient(nonZero?: boolean, clockwise?: boolean): paper.PathItem;
+    // Pairwise unite() — paper.js's real boolean union (the Corel "Weld"
+    // equivalent). Handles tangent contacts and holes properly when one
+    // path is inside another. resolveCrossings + reorient often miss
+    // tangent overlaps in glyph outlines.
+    let result = paths[0] as unknown as paper.PathItem & {
+      unite(other: paper.PathItem): paper.PathItem;
     };
-    // Untangle self-overlaps, then orient outer/holes for non-zero fill.
-    compound.resolveCrossings();
-    compound.reorient(true, true);
-    newContours = collectContours(compound, paper);
-    compound.remove();
+    for (let i = 1; i < paths.length; i++) {
+      const next = paths[i] as unknown as paper.PathItem;
+      const merged = result.unite(next);
+      result = merged as paper.PathItem & {
+        unite(other: paper.PathItem): paper.PathItem;
+      };
+    }
+    newContours = collectContours(result, paper);
+    // unite() removes its operands from the project; result is a new item.
+    result.remove();
   } catch {
     // Anything weird → leave glyph as-is rather than corrupting it.
-    paths.forEach((p) => p.remove());
+    paths.forEach((p) => {
+      if (p.parent) p.remove();
+    });
     return glyph;
   }
 
