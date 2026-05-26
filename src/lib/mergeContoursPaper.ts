@@ -33,11 +33,20 @@ export function getPaper(): Promise<Paper> {
   // paper-core is the canvas-less build — works in any browser and
   // dodges paper.js's optional jsdom dependency that breaks SSR bundling.
   paperReadyPromise = import("paper/dist/paper-core").then((mod) => {
-    // paper.js exports the PaperScope at both the default and as the
-    // namespace itself depending on bundler. Pick whichever has .Path.
-    const candidate = mod as unknown as Paper & { default?: Paper };
-    const paper: Paper = candidate.Path ? candidate : (candidate.default as Paper);
-    paper.setup(new paper.Size(1, 1));
+    // paper.js exports PaperScope as the CommonJS module.exports. Under
+    // ESM dynamic import we get { default: PaperScope }.
+    const paper: Paper =
+      ((mod as unknown as { default?: Paper }).default ??
+        (mod as unknown as Paper));
+    // Explicit Project — setup() doesn't reliably install a default
+    // project in headless paper-core without a real canvas, and Path
+    // creation then fails with "Cannot read properties of null".
+    if (!paper.project) {
+      const project = new paper.Project(new paper.Size(1, 1));
+      paper.projects.push(project);
+      // Make it the active project.
+      (paper as unknown as { project: paper.Project }).project = project;
+    }
     return paper;
   });
   return paperReadyPromise;
