@@ -33,9 +33,32 @@ export default function TermsPage() {
 
         <h2 className="mt-8 text-xl font-semibold text-gray-900">License</h2>
         <p>
-          The source code is released under the MIT License. You may use,
-          copy, modify, and redistribute it under the terms of that license,
-          a copy of which lives in the repository.
+          Source code is available under the{" "}
+          <a
+            className="text-[#ed3338] underline"
+            href="https://polyformproject.org/licenses/noncommercial/1.0.0/"
+            target="_blank"
+            rel="noreferrer"
+          >
+            PolyForm Noncommercial License 1.0.0
+          </a>
+          . You may read, fork, study, modify, and redistribute the code
+          for any <strong>noncommercial</strong> purpose — personal
+          projects, learning, research, public-sector use, or other
+          open-source work. Selling, hosting as a paid service, or
+          embedding the code in any commercial product is{" "}
+          <strong>not permitted</strong> under this license. The full
+          text lives in{" "}
+          <a
+            className="text-[#ed3338] underline"
+            href="https://github.com/xfanta/onshape-fonts/blob/main/LICENSE"
+            target="_blank"
+            rel="noreferrer"
+          >
+            LICENSE
+          </a>{" "}
+          in the repository. For commercial licensing, open a GitHub
+          issue.
         </p>
 
         <h2 className="mt-8 text-xl font-semibold text-gray-900">

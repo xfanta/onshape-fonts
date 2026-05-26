@@ -4,6 +4,8 @@ Onshape integrated app + custom FeatureScript pro vkládání textu z **Google F
 
 Sekundárně podporuje upload vlastních `.ttf`/`.otf` souborů.
 
+> **License:** source-available pod [PolyForm Noncommercial 1.0.0](./LICENSE) — fork / studuj / hraj si zdarma, komerční použití (prodej, hostovaný service, paid plugin) potřebuje samostatnou licenci. Otevři GitHub issue.
+
 ## Architektura
 
 - **Next.js + TypeScript** (deploy na Vercel) — iframe panel (`/panel`) + standalone preview (`/preview`) + OAuth backend + Onshape REST proxy
