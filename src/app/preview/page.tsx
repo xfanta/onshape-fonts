@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import type { Font } from "opentype.js";
 import { CurveData, textToCurves } from "@/lib/textToCurves";
 import { mergeCurveContours } from "@/lib/mergeContours";
+import { curvesToDxf, curvesToStandaloneSvg } from "@/lib/exporters";
 import { FontPicker, SelectedFont } from "@/components/FontPicker";
 import { SketchViewer } from "@/components/SketchViewer";
 import { SiteShell } from "@/components/SiteShell";
@@ -55,6 +56,30 @@ export default function PreviewPage() {
     if (!outputCurves) return;
     await navigator.clipboard.writeText(JSON.stringify(outputCurves));
   }, [outputCurves]);
+
+  const downloadFile = useCallback(
+    (content: string, ext: string, mime: string) => {
+      if (!outputCurves) return;
+      const blob = new Blob([content], { type: mime });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${outputCurves.text.replace(/[^\w]/g, "_") || "text"}.${ext}`;
+      a.click();
+      URL.revokeObjectURL(url);
+    },
+    [outputCurves],
+  );
+
+  const downloadSvg = useCallback(() => {
+    if (!outputCurves) return;
+    downloadFile(curvesToStandaloneSvg(outputCurves), "svg", "image/svg+xml");
+  }, [outputCurves, downloadFile]);
+
+  const downloadDxf = useCallback(() => {
+    if (!outputCurves) return;
+    downloadFile(curvesToDxf(outputCurves), "dxf", "application/dxf");
+  }, [outputCurves, downloadFile]);
 
   return (
     <SiteShell>
@@ -115,7 +140,21 @@ export default function PreviewPage() {
                 <span>
                   {payloadKB} KB JSON · v{outputCurves.v} wire format
                 </span>
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={downloadSvg}
+                    className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-50"
+                  >
+                    Export .svg
+                  </button>
+                  <button
+                    type="button"
+                    onClick={downloadDxf}
+                    className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-50"
+                  >
+                    Export .dxf
+                  </button>
                   <button
                     type="button"
                     onClick={copyJson}
