@@ -99,13 +99,21 @@ export default function PreviewPage() {
 
         <div className="grid gap-8 lg:grid-cols-[420px_1fr]">
           {/* Left: font picker */}
-          <FontPickerCard
-            text={text}
-            setText={setText}
-            selected={selected}
-            setSelected={setSelected}
-            setFont={setFont}
-          />
+          <div className="flex flex-col gap-3">
+            <h2 className="text-sm font-medium text-gray-700">
+              Font
+              <span className="ml-2 text-xs font-normal text-gray-400">
+                search · category · subset · weight
+              </span>
+            </h2>
+            <FontPickerCard
+              text={text}
+              setText={setText}
+              selected={selected}
+              setSelected={setSelected}
+              setFont={setFont}
+            />
+          </div>
 
           {/* Right: interactive sketch + export */}
           <div className="flex flex-col gap-3">
