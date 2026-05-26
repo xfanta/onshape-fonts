@@ -52,8 +52,8 @@ interface Props {
 export function SketchViewer({ curves }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [viewBox, setViewBox] = useState<ViewBox | null>(null);
-  const [showPoints, setShowPoints] = useState(false);
-  const [filled, setFilled] = useState(true);
+  const [showPoints, setShowPoints] = useState(true);
+  const [filled, setFilled] = useState(false);
   const viewBoxRef = useRef<ViewBox | null>(null);
   viewBoxRef.current = viewBox;
 
