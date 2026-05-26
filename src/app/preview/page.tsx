@@ -54,11 +54,6 @@ export default function PreviewPage() {
     URL.revokeObjectURL(url);
   }, [displayCurves]);
 
-  const copyJson = useCallback(async () => {
-    if (!displayCurves) return;
-    await navigator.clipboard.writeText(JSON.stringify(displayCurves));
-  }, [displayCurves]);
-
   const downloadFile = useCallback(
     (content: string, ext: string, mime: string) => {
       if (!displayCurves) return;
@@ -151,17 +146,10 @@ export default function PreviewPage() {
                   </button>
                   <button
                     type="button"
-                    onClick={copyJson}
-                    className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-50"
-                  >
-                    Copy JSON
-                  </button>
-                  <button
-                    type="button"
                     onClick={downloadJson}
                     className="rounded border border-gray-300 px-2 py-1 hover:bg-gray-50"
                   >
-                    Download .json
+                    Export .json
                   </button>
                 </div>
               </div>
