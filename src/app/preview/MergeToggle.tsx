@@ -52,22 +52,27 @@ export default function MergeToggle({ curves, onResult }: Props) {
     };
   }, [curves, enabled, onResult]);
 
+  const tooltip =
+    "Best-effort cleanup of self-overlapping glyph outlines. " +
+    "Inner holes (o, p, q, b) are kept, but tangent contacts " +
+    "(e crossbar, some serifs) may remain.";
+
   return (
     <div className="rounded border border-gray-200 p-2 text-xs text-gray-700">
-      <label className="flex items-start gap-2">
+      <label className="flex items-center gap-2">
         <input
           type="checkbox"
           checked={enabled}
           onChange={(e) => setEnabled(e.target.checked)}
-          className="mt-0.5"
         />
-        <span>
-          <span className="font-medium">Reduce overlapping contours per letter</span>
-          <span className="block text-[11px] font-normal text-gray-500">
-            Best-effort cleanup of self-overlapping glyph outlines.
-            Inner holes (o, p, q, b) are kept, but tangent contacts
-            (e crossbar, some serifs) may remain.
-          </span>
+        <span className="font-medium">Reduce overlapping contours per letter</span>
+        <span
+          tabIndex={0}
+          title={tooltip}
+          aria-label={tooltip}
+          className="inline-flex h-4 w-4 cursor-help items-center justify-center rounded-full border border-gray-300 text-[10px] font-semibold text-gray-500 hover:border-gray-400 hover:text-gray-700"
+        >
+          ?
         </span>
       </label>
       {enabled && (

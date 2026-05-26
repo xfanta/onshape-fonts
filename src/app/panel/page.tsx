@@ -247,7 +247,7 @@ function PanelInner() {
                 drag · scroll
               </span>
             </h2>
-            <div className="aspect-[3/2] w-full">
+            <div className="aspect-[3/1] w-full">
               <SketchViewer curves={displayCurves} />
             </div>
           </div>

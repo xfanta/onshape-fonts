@@ -436,7 +436,7 @@ export function FontPicker({
         )}
 
         {googleEnabled && (
-          <div className="max-h-48 overflow-auto rounded border border-gray-200">
+          <div className="max-h-24 overflow-auto rounded border border-gray-200">
             {filtered.length === 0 ? (
               <div className="p-2 text-xs text-gray-500">No fonts match</div>
             ) : (

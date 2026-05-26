@@ -130,7 +130,7 @@ export default function PreviewPage() {
                 drag to pan · scroll to zoom
               </span>
             </h2>
-            <div className="aspect-[4/3] w-full">
+            <div className="aspect-[8/3] w-full">
               <SketchViewer curves={displayCurves} />
             </div>
 
