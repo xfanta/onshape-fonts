@@ -139,6 +139,7 @@ export function FontPicker({
   const [uploaded, setUploaded] = useState<UploadedEntry[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [activeTab, setActiveTab] = useState<"google" | "upload">("google");
   const fontCacheRef = useRef<Map<string, Font>>(new Map());
 
   useCategoryPreviewFonts();
@@ -312,6 +313,7 @@ export function FontPicker({
             : [...prev, { key, family, font, buffer }],
         );
         onSelectedChange({ kind: "uploaded", key, family });
+        setActiveTab("upload");
       } catch (e) {
         setError(`Upload failed: ${e instanceof Error ? e.message : String(e)}`);
       }
@@ -328,23 +330,44 @@ export function FontPicker({
         : meta.variants[0];
       onSelectedChange({ kind: "google", family, variant: v });
       setSearch("");
+      setActiveTab("google");
     },
     [families, onSelectedChange],
   );
 
   return (
     <div className="space-y-6">
-      {/* === Google Fonts section === */}
-      <section className="space-y-3">
-        <header>
-          <h1 className="text-base font-semibold">Google Fonts</h1>
-          {googleEnabled === false && (
-            <p className="text-xs text-gray-500">
-              Disabled — set GOOGLE_FONTS_API_KEY.
-            </p>
+      {/* === Source tabs === */}
+      <div
+        role="tablist"
+        aria-label="Font source"
+        className="flex gap-1 border-b border-gray-200"
+      >
+        <TabBtn
+          active={activeTab === "google"}
+          onClick={() => setActiveTab("google")}
+        >
+          Google Fonts
+        </TabBtn>
+        <TabBtn
+          active={activeTab === "upload"}
+          onClick={() => setActiveTab("upload")}
+        >
+          Upload custom font
+          {uploaded.length > 0 && (
+            <span className="ml-1.5 rounded-full bg-gray-200 px-1.5 py-0.5 text-[10px] font-medium text-gray-700">
+              {uploaded.length}
+            </span>
           )}
-        </header>
+        </TabBtn>
+      </div>
 
+      {/* === Google Fonts section === */}
+      <section
+        role="tabpanel"
+        hidden={activeTab !== "google"}
+        className="space-y-3"
+      >
         {googleEnabled === false && (
           <div className="rounded bg-amber-50 p-2 text-xs text-amber-900">
             Google Fonts unavailable (set <code>GOOGLE_FONTS_API_KEY</code>).
@@ -507,11 +530,11 @@ export function FontPicker({
       </section>
 
       {/* === Upload custom font section === */}
-      <section className="space-y-3">
-        <header>
-          <h1 className="text-base font-semibold">Upload custom font</h1>
-        </header>
-
+      <section
+        role="tabpanel"
+        hidden={activeTab !== "upload"}
+        className="space-y-3"
+      >
         <UploadDropZone onFile={onUpload} />
 
         {uploaded.length > 0 && (
@@ -797,6 +820,32 @@ function AlignIcon({ kind }: { kind: TextAlign }) {
         />
       ))}
     </svg>
+  );
+}
+
+function TabBtn({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      role="tab"
+      aria-selected={active}
+      onClick={onClick}
+      className={`relative -mb-px flex items-center border-b-2 px-3 py-2 text-sm font-medium transition-colors ${
+        active
+          ? "border-[#1189e3] text-[#1189e3]"
+          : "border-transparent text-gray-600 hover:text-gray-900"
+      }`}
+    >
+      {children}
+    </button>
   );
 }
 
