@@ -10,7 +10,7 @@ interface Props {
 }
 
 export default function MergeToggle({ curves, onResult }: Props) {
-  const [enabled, setEnabled] = useState(false);
+  const [enabled, setEnabled] = useState(true);
   const [status, setStatus] = useState<"idle" | "computing" | "ok" | "error">(
     "idle",
   );
