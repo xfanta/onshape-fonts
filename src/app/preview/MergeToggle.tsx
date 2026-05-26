@@ -9,31 +9,43 @@ interface Props {
   onResult: (merged: CurveData | null) => void;
 }
 
-/** Toggle + paper.js merge worker. Lives in its own file so it can be
- *  loaded via next/dynamic with ssr:false — paper.js statically pulls
- *  in jsdom in one of its conditional branches, which breaks Next.js's
- *  client-component SSR pass. Keeping the import on the client only
- *  avoids that. */
 export default function MergeToggle({ curves, onResult }: Props) {
   const [enabled, setEnabled] = useState(false);
-  const [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState<"idle" | "computing" | "ok" | "error">(
+    "idle",
+  );
+  const [errMsg, setErrMsg] = useState<string | null>(null);
+  const [before, setBefore] = useState(0);
+  const [after, setAfter] = useState(0);
 
   useEffect(() => {
     if (!curves || !enabled) {
       onResult(null);
+      setStatus("idle");
+      setErrMsg(null);
       return;
     }
     let cancelled = false;
-    setBusy(true);
+    const beforeCount = curves.glyphs.reduce(
+      (n, g) => n + g.contours.length,
+      0,
+    );
+    setBefore(beforeCount);
+    setStatus("computing");
+    setErrMsg(null);
     mergeCurveContoursWithPaper(curves)
       .then((r) => {
-        if (!cancelled) onResult(r);
+        if (cancelled) return;
+        const afterCount = r.glyphs.reduce((n, g) => n + g.contours.length, 0);
+        setAfter(afterCount);
+        setStatus("ok");
+        onResult(r);
       })
-      .catch(() => {
-        if (!cancelled) onResult(null);
-      })
-      .finally(() => {
-        if (!cancelled) setBusy(false);
+      .catch((e) => {
+        if (cancelled) return;
+        setErrMsg(e instanceof Error ? e.message : String(e));
+        setStatus("error");
+        onResult(null);
       });
     return () => {
       cancelled = true;
@@ -41,21 +53,32 @@ export default function MergeToggle({ curves, onResult }: Props) {
   }, [curves, enabled, onResult]);
 
   return (
-    <label className="flex items-start gap-2 rounded border border-gray-200 p-2 text-xs text-gray-700">
-      <input
-        type="checkbox"
-        checked={enabled}
-        onChange={(e) => setEnabled(e.target.checked)}
-        className="mt-0.5"
-      />
-      <span className="font-medium">
-        Merge overlapping contours per letter
-        {busy && (
-          <span className="ml-2 text-[11px] font-normal text-gray-500">
-            computing…
-          </span>
-        )}
-      </span>
-    </label>
+    <div className="rounded border border-gray-200 p-2 text-xs text-gray-700">
+      <label className="flex items-start gap-2">
+        <input
+          type="checkbox"
+          checked={enabled}
+          onChange={(e) => setEnabled(e.target.checked)}
+          className="mt-0.5"
+        />
+        <span className="font-medium">Merge overlapping contours per letter</span>
+      </label>
+      {enabled && (
+        <div className="mt-1 ml-6 text-[11px] text-gray-500">
+          {status === "computing" && "computing with paper.js…"}
+          {status === "ok" && (
+            <>
+              merged: <strong>{before}</strong> contours →{" "}
+              <strong>{after}</strong>
+            </>
+          )}
+          {status === "error" && (
+            <span className="text-red-700">
+              paper.js failed: {errMsg ?? "unknown error"}
+            </span>
+          )}
+        </div>
+      )}
+    </div>
   );
 }
