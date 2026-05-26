@@ -57,11 +57,18 @@ export function SketchViewer({ curves }: Props) {
   const viewBoxRef = useRef<ViewBox | null>(null);
   viewBoxRef.current = viewBox;
 
-  // Reset viewBox whenever the underlying curves change.
+  // Reset viewBox only when the text content actually changes (typing a
+  // new word). Toggling Reduce or switching fonts re-emits curves with
+  // the same text — in that case keep the user's current pan/zoom.
+  const textKey = curves?.text ?? "__empty__";
   useEffect(() => {
-    if (!curves) return;
+    if (!curves) {
+      setViewBox(null);
+      return;
+    }
     setViewBox(boundsToViewBox(curvesBounds(curves)));
-  }, [curves]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [textKey]);
 
   // Native wheel handler (React onWheel is passive by default — we need
   // preventDefault so the page itself doesn't scroll while zooming).
