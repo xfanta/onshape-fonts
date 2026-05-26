@@ -207,7 +207,7 @@ export default function Home() {
                 <svg viewBox="0 0 16 16" fill="currentColor">
                   <polygon points="5,3.5 12,8 5,12.5" />
                 </svg>
-                Try in browser
+                Preview
               </a>
             </div>
             <div className="lp-trust">

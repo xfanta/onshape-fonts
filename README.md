@@ -8,7 +8,7 @@ Sekundárně podporuje upload vlastních `.ttf`/`.otf` souborů.
 
 - **Next.js + TypeScript** (deploy na Vercel) — iframe panel (`/panel`) + standalone preview (`/preview`) + OAuth backend + Onshape REST proxy
 - **opentype.js** — text + font → cubic Bézier křivky → kompaktní JSON
-- **FeatureScript** (`featurescript/textToSketch.fs`) — parsuje JSON, emit `skFitSpline` per cubic na zvolené rovině
+- **FeatureScript** (`featurescript/googleFontsToSketch.fs`) — parsuje JSON, emit `skFitSpline` per cubic na zvolené rovině
 - **Local Font Access API** (Chrome/Edge) + fallback upload `.ttf`/`.otf` + **Google Fonts** (volitelně, vyžaduje API key)
 - **Vercel KV** pro OAuth tokeny (in-memory fallback pro dev)
 
@@ -28,7 +28,7 @@ pnpm dev
 
 1. V Onshape vytvoř **nový dokument** (bude veřejný — neukládej v něm IP).
 2. V dokumentu vytvoř **Feature Studio** (`+` → `Create Feature Studio`).
-3. Zkopíruj obsah [`featurescript/textToSketch.fs`](featurescript/textToSketch.fs) do FS notebooku. Uprav `FeatureScript 2570;` a `version : "2570.0"` na aktuální FS verzi (vlevo v notebooku jde najít `Notices` → number).
+3. Zkopíruj obsah [`featurescript/googleFontsToSketch.fs`](featurescript/googleFontsToSketch.fs) do FS notebooku. Uprav `FeatureScript 2570;` a `version : "2570.0"` na aktuální FS verzi (vlevo v notebooku jde najít `Notices` → number).
 4. Klikni **`Commit`** (nahoru vpravo) — FS se zkompiluje.
 5. **Cut version**: `Version 1` (icon hodinek vlevo). Verze musí být cut, ne workspace, protože reference musí být stabilní.
 6. Změň document **Sharing → Make public**.
@@ -127,7 +127,7 @@ src/
     tokenStore.ts             # Vercel KV / in-memory
     env.ts                    # zod-validated env config
 featurescript/
-  textToSketch.fs             # FS feature publikovaná v Onshape
+  googleFontsToSketch.fs      # FS feature publikovaná v Onshape
 fixtures/                     # fixture JSONy pro manuální FS test
 scripts/
   generate-fixtures.ts        # produkuje fixtures z lokálních fontů

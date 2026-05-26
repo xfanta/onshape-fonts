@@ -9,7 +9,7 @@ const onshapeSchema = z.object({
   ONSHAPE_FS_DOCUMENT_ID: z.string().min(1),
   ONSHAPE_FS_VERSION_ID: z.string().min(1),
   ONSHAPE_FS_ELEMENT_ID: z.string().min(1),
-  ONSHAPE_FS_FEATURE_NAME: z.string().default("textToSketch"),
+  ONSHAPE_FS_FEATURE_NAME: z.string().default("googleFontsToSketch"),
   SESSION_SECRET: z.string().min(32),
   KV_REST_API_URL: z.string().url().optional(),
   KV_REST_API_TOKEN: z.string().optional(),

@@ -54,7 +54,7 @@ export default function PreviewPage() {
       <div className="mx-auto max-w-7xl px-6 py-10">
         <section className="mb-8">
           <h1 className="text-3xl font-semibold tracking-tight">
-            Try in browser
+            Preview
           </h1>
           <p className="mt-2 text-sm text-gray-500">
             Standalone playground for the text → sketch geometry

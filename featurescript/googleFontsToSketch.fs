@@ -2,7 +2,7 @@ FeatureScript 2960;
 import(path : "onshape/std/geometry.fs", version : "2960.0");
 
 /**
- * textToSketch — render glyph outlines, supplied as JSON, into a sketch.
+ * googleFontsToSketch — render glyph outlines, supplied as JSON, into a sketch.
  *
  * JSON wire format v2 (produced by lib/textToCurves.ts):
  *   {
@@ -40,7 +40,7 @@ export const TEXT_OFFSET_BOUNDS =
 } as LengthBoundSpec;
 
 annotation { "Feature Type Name" : "Google Fonts to Sketch" }
-export const textToSketch = defineFeature(function(context is Context, id is Id, definition is map)
+export const googleFontsToSketch = defineFeature(function(context is Context, id is Id, definition is map)
     precondition
     {
         annotation { "Name" : "Sketch plane", "Filter" : GeometryType.PLANE }

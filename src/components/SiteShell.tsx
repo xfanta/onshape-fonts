@@ -48,7 +48,7 @@ function SiteHeader() {
             Pricing
           </Link>
           <Link href="/preview" className="hover:text-gray-900">
-            Try in browser
+            Preview
           </Link>
           <a
             className="hidden hover:text-gray-900 md:block"
