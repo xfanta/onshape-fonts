@@ -709,51 +709,60 @@ function UploadDropZone({ onFile }: { onFile: (f: File) => void }) {
 }
 
 function LetterSpacingIcon() {
-  // Two glyph stand-ins ('A's as triangles) with a horizontal double-arrow
-  // between them showing the spacing axis.
+  // Standard typographic tracking icon: a "VA" pair above a horizontal
+  // double-arrow spanning their width.
   return (
-    <svg viewBox="0 0 16 14" width="14" height="12" aria-hidden>
-      {/* Left A */}
+    <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden>
+      {/* V */}
       <polyline
-        points="1,12 3.5,3 6,12"
+        points="1,1.5 4,9 7,1.5"
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.5"
         strokeLinejoin="round"
         strokeLinecap="round"
       />
-      {/* Right A */}
+      {/* A */}
       <polyline
-        points="10,12 12.5,3 15,12"
+        points="8,9 11,1.5 14,9"
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.4"
+        strokeWidth="1.5"
         strokeLinejoin="round"
         strokeLinecap="round"
       />
-      {/* Double arrow between them */}
       <line
-        x1="6.8"
-        y1="13"
-        x2="9.2"
-        y2="13"
+        x1="9.2"
+        y1="6.5"
+        x2="12.8"
+        y2="6.5"
         stroke="currentColor"
         strokeWidth="1.2"
         strokeLinecap="round"
       />
+      {/* Double arrow under both letters */}
+      <line
+        x1="1"
+        y1="13.5"
+        x2="14"
+        y2="13.5"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
       <polyline
-        points="7.5,12.2 6.6,13 7.5,13.8"
+        points="2.6,12.2 1,13.5 2.6,14.8"
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.2"
+        strokeWidth="1.3"
         strokeLinejoin="round"
         strokeLinecap="round"
       />
       <polyline
-        points="8.5,12.2 9.4,13 8.5,13.8"
+        points="12.4,12.2 14,13.5 12.4,14.8"
         fill="none"
         stroke="currentColor"
-        strokeWidth="1.2"
+        strokeWidth="1.3"
         strokeLinejoin="round"
         strokeLinecap="round"
       />
