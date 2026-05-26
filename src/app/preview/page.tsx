@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import type { Font } from "opentype.js";
 import { CurveData, textToCurves } from "@/lib/textToCurves";
@@ -114,24 +114,6 @@ export default function PreviewPage() {
                 {error}
               </div>
             )}
-
-            <details className="mt-2">
-              <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-700">
-                Wire format JSON
-              </summary>
-              <pre className="mt-2 max-h-72 overflow-auto rounded border border-gray-200 bg-gray-50 p-3 text-xs">
-                {curves ? JSON.stringify(curves, null, 2) : "—"}
-              </pre>
-            </details>
-
-            {font && (
-              <details>
-                <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-700">
-                  Debug: raw opentype.js path commands per glyph
-                </summary>
-                <DebugDump font={font} text={text} />
-              </details>
-            )}
           </div>
         </div>
       </main>
@@ -244,47 +226,3 @@ function FontPickerCard({
   );
 }
 
-function DebugDump({ font, text }: { font: Font; text: string }) {
-  const [copied, setCopied] = useState(false);
-  const dump = useMemo(() => {
-    if (!text) return "";
-    return Array.from(text)
-      .map((ch) => {
-        const g = font.charToGlyph(ch);
-        const p = g.getPath(0, 0, font.unitsPerEm);
-        const cmds = (p.commands as unknown[])
-          .map((c) =>
-            typeof c === "object" && c !== null
-              ? JSON.stringify(c)
-              : String(c),
-          )
-          .join("\n  ");
-        return `--- "${ch}" (unicode ${ch.charCodeAt(0)}) — glyph ${g.index}, advance ${g.advanceWidth} ---\n  ${cmds}`;
-      })
-      .join("\n\n");
-  }, [font, text]);
-
-  return (
-    <div className="mt-2">
-      <div className="mb-2 flex items-center gap-2">
-        <button
-          type="button"
-          onClick={async () => {
-            await navigator.clipboard.writeText(dump);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 1500);
-          }}
-          className="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-50"
-        >
-          {copied ? "✓ Copied" : "Copy to clipboard"}
-        </button>
-        <span className="text-xs text-gray-500">
-          {dump.length.toLocaleString()} chars
-        </span>
-      </div>
-      <pre className="max-h-96 overflow-auto rounded border border-gray-200 bg-gray-50 p-3 text-xs">
-        {dump || "—"}
-      </pre>
-    </div>
-  );
-}

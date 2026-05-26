@@ -236,28 +236,29 @@ export function SketchViewer({ curves }: Props) {
             />
           </pattern>
         </defs>
+        {/* Extend the grid and axes far beyond the viewBox so that with
+            any preserveAspectRatio padding (or when the user pans) the
+            grid still covers the whole visible canvas — no white gutters. */}
         <rect
-          x={viewBox.x}
-          y={viewBox.y}
-          width={viewBox.w}
-          height={viewBox.h}
+          x={viewBox.x - viewBox.w * 3}
+          y={viewBox.y - viewBox.h * 3}
+          width={viewBox.w * 7}
+          height={viewBox.h * 7}
           fill="url(#grid)"
         />
-
-        {/* Axes through origin */}
         <line
-          x1={viewBox.x}
+          x1={viewBox.x - viewBox.w * 3}
           y1={0}
-          x2={viewBox.x + viewBox.w}
+          x2={viewBox.x + viewBox.w * 4}
           y2={0}
           stroke="#cbd5e1"
           strokeWidth={axisStroke}
         />
         <line
           x1={0}
-          y1={viewBox.y}
+          y1={viewBox.y - viewBox.h * 3}
           x2={0}
-          y2={viewBox.y + viewBox.h}
+          y2={viewBox.y + viewBox.h * 4}
           stroke="#cbd5e1"
           strokeWidth={axisStroke}
         />
