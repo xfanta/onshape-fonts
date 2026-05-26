@@ -345,7 +345,7 @@ export default function Home() {
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.4">
                       <polyline points="3,8 7,12 13,4" />
                     </svg>
-                    Native sketch geometry — fully editable
+                    Native sketch geometry
                   </li>
                   <li>
                     <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="2.4">
