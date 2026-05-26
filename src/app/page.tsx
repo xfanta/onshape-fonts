@@ -23,10 +23,10 @@ const css = `
 .lp-nav-r{display:flex;gap:28px;align-items:center;font-size:13.5px;color:#4a5260}
 .lp-nav-r a{color:inherit;text-decoration:none}
 .lp-nav-r a:hover{color:#1a1d23}
-.lp-cta-sm{padding:7px 14px;background:var(--grad);color:#fff;border-radius:5px;
-  font-weight:500;font-size:13px;border:1px solid transparent;cursor:pointer;
-  text-decoration:none;display:inline-block}
-.lp-cta-sm:hover{filter:brightness(1.04)}
+.lp-nav-r a.lp-cta-sm,.lp-cta-sm{padding:7px 14px;background:var(--grad);color:#fff;
+  border-radius:5px;font-weight:500;font-size:13px;border:1px solid transparent;
+  cursor:pointer;text-decoration:none;display:inline-block}
+.lp-nav-r a.lp-cta-sm:hover,.lp-cta-sm:hover{filter:brightness(1.04);color:#fff}
 
 .lp-hero{padding:96px 56px 72px;display:grid;grid-template-columns:1.05fr .95fr;
   gap:64px;align-items:center;max-width:1280px;margin:0 auto}
