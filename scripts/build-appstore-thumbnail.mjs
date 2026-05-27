@@ -97,10 +97,15 @@ const HEADER_H = 36 + STAGE_NUDGE_DOWN;           // 43
 const STAGE_TOP = HEADER_H;                       // 43
 const STAGE_BOTTOM = HEADER_H + 9 * GRID;         // 169
 const CAPTION_TOP = STAGE_BOTTOM;                 // 169
-// Logo geometry: square left-inset by LOGO_LEFT, vertically centered
-// in the header so the glyph aligns with the wordmark mid-x-height.
+// Logo + wordmark are centered as a unit on the canvas mid-x. The
+// wordmark width is eyeballed (system font; no programmatic measurer
+// available at build time). Refine if the optical centering looks
+// off in either rsvg-convert preview or the live browser render.
 const LOGO_SIZE = 18;
-const LOGO_LEFT = 9;
+const LOGO_GAP = 6;                                   // logo → text gap
+const WORDMARK_APPROX_WIDTH = 134;                    // 'Google Fonts for Onshape' @ 11.5px system semibold + regular
+const HEADER_GROUP_WIDTH = LOGO_SIZE + LOGO_GAP + WORDMARK_APPROX_WIDTH;
+const LOGO_LEFT = (CANVAS_W - HEADER_GROUP_WIDTH) / 2;
 const LOGO_TOP = (HEADER_H - LOGO_SIZE) / 2;
 // Text is LEFT-ALIGNED at TEXT_X with baseline at TEXT_BASELINE.
 // The two thicker "origin" axes meet exactly at this (start, baseline)
@@ -196,7 +201,7 @@ const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W
         <path d="${LOGO}"/>
       </g>
     </g>
-    <text x="${LOGO_LEFT + LOGO_SIZE + 6}" y="${HEADER_H / 2 + 4}" xml:space="preserve"
+    <text x="${LOGO_LEFT + LOGO_SIZE + LOGO_GAP}" y="${HEADER_H / 2 + 4}" xml:space="preserve"
           font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif"
           font-weight="600" font-size="11.5" fill="#0f1216"
           >Google Fonts <tspan font-weight="400" fill="#94a0b0">for Onshape</tspan></text>
