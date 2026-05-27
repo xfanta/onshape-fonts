@@ -1,0 +1,4 @@
+# Adds a "Sponsor" button to the repo header.
+# Stripe link is the maintained donation page; the others are not used.
+
+custom: ['https://donate.stripe.com/8x2dRafZtcY6fJI6Mj57W01']
