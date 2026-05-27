@@ -94,10 +94,11 @@ const HEADER_H = 36 + STAGE_NUDGE_DOWN;           // 43
 const STAGE_TOP = HEADER_H;                       // 43
 const STAGE_BOTTOM = HEADER_H + 9 * GRID;         // 169
 const CAPTION_TOP = STAGE_BOTTOM;                 // 169
-// Logo geometry: square at translate(LOGO_PAD, LOGO_PAD) so the
-// distance from the top edge equals the distance from the left edge.
+// Logo geometry: square left-inset by LOGO_LEFT, vertically centered
+// in the header so the glyph aligns with the wordmark mid-x-height.
 const LOGO_SIZE = 18;
-const LOGO_PAD = 9;
+const LOGO_LEFT = 9;
+const LOGO_TOP = (HEADER_H - LOGO_SIZE) / 2;
 // Text is LEFT-ALIGNED at TEXT_X with baseline at TEXT_BASELINE.
 // The two thicker "origin" axes meet exactly at this (start, baseline)
 // corner — i.e. at the 0,0 of the text frame.
@@ -171,13 +172,13 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${
 
   <!-- Header -->
   <g>
-    <g transform="translate(${LOGO_PAD}, ${LOGO_PAD})">
+    <g transform="translate(${LOGO_LEFT}, ${LOGO_TOP})">
       <rect width="${LOGO_SIZE}" height="${LOGO_SIZE}" rx="4" ry="4" fill="url(#brand)"/>
       <g transform="translate(3, 3) scale(0.01875)" fill="#ffffff">
         <path d="${LOGO}"/>
       </g>
     </g>
-    <text x="${LOGO_PAD + LOGO_SIZE + 6}" y="${HEADER_H / 2 + 4}" xml:space="preserve"
+    <text x="${LOGO_LEFT + LOGO_SIZE + 6}" y="${HEADER_H / 2 + 4}" xml:space="preserve"
           font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif"
           font-weight="600" font-size="11.5" fill="#0f1216"
           >Google Fonts <tspan font-weight="400" fill="#94a0b0">for Onshape</tspan></text>
