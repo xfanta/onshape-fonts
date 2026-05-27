@@ -95,7 +95,7 @@ To run the full Onshape-integrated experience locally (OAuth, panel iframe, feat
 2. An OAuth app registered in the [Onshape Dev Portal](https://dev-portal.onshape.com/oauthApps) with redirect `http://localhost:3000/api/oauth/callback`.
 3. A `.env.local` populated from `.env.example` (Onshape client ID/secret, FS document IDs, optionally a Google Fonts API key, KV credentials).
 
-See [`AGENTS.md`](./AGENTS.md) for the breaking-change-friendly Next.js 16 notes, and the `featurescript/` directory for the FS source.
+See the `featurescript/` directory for the published FS feature source.
 
 ## Project layout
 
