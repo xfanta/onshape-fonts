@@ -94,7 +94,7 @@ const CAPTION_TOP = STAGE_BOTTOM;          // 154
 // Text is LEFT-ALIGNED at TEXT_X with baseline at TEXT_BASELINE.
 // The two thicker "origin" axes meet exactly at this (start, baseline)
 // corner — i.e. at the 0,0 of the text frame.
-const TEXT_X = 42;                          // 3 cells from left edge
+const TEXT_X = 56;                          // 4 cells from left edge
 const TEXT_BASELINE = 126;
 
 // === Extract curves + vertices ===
