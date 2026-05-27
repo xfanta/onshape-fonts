@@ -1,6 +1,6 @@
 FeatureScript 2960;
 import(path : "onshape/std/geometry.fs", version : "2960.0");
-import(path : "e72b0d6629740a2630f45f7e", version : "8b152f1c91ee99d27a0f046d");
+icon::import(path : "e72b0d6629740a2630f45f7e", version : "8b152f1c91ee99d27a0f046d");
 
 /**
  * googleFontsToSketch — render glyph outlines, supplied as JSON, into a sketch.
@@ -43,6 +43,7 @@ export const TEXT_OFFSET_BOUNDS =
 annotation {
         "Feature Type Name" : "Google Fonts to Sketch",
         "Feature Type Description" : "Renders text from any Google Fonts family or your own uploaded .ttf/.otf file onto the chosen sketch plane as native curves. Em-height, position, and rotation stay editable as feature parameters; the text, font, weight, and layout are baked in when you click Insert (re-open the add-in's panel to change them).",
+        "Icon" : icon::BLOB_DATA
     }
 export const googleFontsToSketch = defineFeature(function(context is Context, id is Id, definition is map)
     precondition
