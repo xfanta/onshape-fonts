@@ -35,17 +35,17 @@ function fetchTTF(id, family) {
   return tmp;
 }
 
-// Render "Hello" in `fontPath` at the given font size, centered on
-// (cxTarget, cyTarget) inside the canvas. Returns { d, points }.
-function renderWord(fontPath, fontSize, cxTarget, baselineY) {
+// Render "Hello" in `fontPath` at the given font size, LEFT-aligned so
+// the leftmost ink lands at leftX, with the baseline at baselineY.
+// Returns { d, points }.
+function renderWord(fontPath, fontSize, leftX, baselineY) {
   const buf = readFileSync(fontPath);
   const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
   const font = opentype.parse(ab);
   const path = font.getPath(WORD, 0, 0, fontSize);
   const bbox = path.getBoundingBox();
-  const w = bbox.x2 - bbox.x1;
-  // shift so text is horizontally centered on cxTarget and baseline at baselineY
-  const dx = cxTarget - (bbox.x1 + w / 2);
+  // shift so leftmost ink lands at leftX and baseline at baselineY
+  const dx = leftX - bbox.x1;
   const dy = baselineY;
   // Apply translation to commands (so points and path d are in canvas coords).
   for (const c of path.commands) {
@@ -68,23 +68,39 @@ function renderWord(fontPath, fontSize, cxTarget, baselineY) {
 // === Fetch fonts ===
 console.log("Fetching fonts...");
 const sources = [
-  { id: "playfair",  family: "Playfair+Display:ital,wght@1,700", size: 78 },
-  { id: "lobster",   family: "Lobster",                          size: 78 },
-  { id: "roboto",    family: "Roboto:wght@700",                  size: 78 },
-  { id: "jetbrains", family: "JetBrains+Mono:wght@700",          size: 62 },
+  // Each ~15-20% larger than the v3 sizes (78/78/78/62) to give the
+  // word more visual weight in the thumbnail.
+  { id: "playfair",  family: "Playfair+Display:ital,wght@1,700", size: 92 },
+  { id: "lobster",   family: "Lobster",                          size: 88 },
+  { id: "roboto",    family: "Roboto:wght@700",                  size: 88 },
+  { id: "jetbrains", family: "JetBrains+Mono:wght@700",          size: 76 },
 ];
 for (const s of sources) {
   s.path = fetchTTF(s.id, s.family);
 }
 
-// === Extract curves + vertices ===
-console.log("Extracting glyph curves...");
+// === Layout ===
+// Grid step 14 px: divides 350 cleanly (25 cells across) AND lets us
+// build a stage area that's a whole number of cells tall. With
+// header = 28 (2 cells) and stage = 126 (9 cells), every visible
+// grid cell in the stage is a full square — no partial cells.
 const CANVAS_W = 350;
 const CANVAS_H = 197;
-const TEXT_CX = 175;
-const TEXT_BASELINE = 138;
+const GRID = 14;
+const HEADER_H = 28;                       // 2 cells
+const STAGE_TOP = HEADER_H;                // 28
+const STAGE_BOTTOM = HEADER_H + 9 * GRID;  // 154
+const CAPTION_TOP = STAGE_BOTTOM;          // 154
+// Text is LEFT-ALIGNED at TEXT_X with baseline at TEXT_BASELINE.
+// The two thicker "origin" axes meet exactly at this (start, baseline)
+// corner — i.e. at the 0,0 of the text frame.
+const TEXT_X = 42;                          // 3 cells from left edge
+const TEXT_BASELINE = 126;
+
+// === Extract curves + vertices ===
+console.log("Extracting glyph curves...");
 for (const s of sources) {
-  Object.assign(s, renderWord(s.path, s.size, TEXT_CX, TEXT_BASELINE));
+  Object.assign(s, renderWord(s.path, s.size, TEXT_X, TEXT_BASELINE));
 }
 
 // === Build SVG ===
@@ -139,8 +155,8 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${
       <stop offset="0%" stop-color="#F48635"/>
       <stop offset="100%" stop-color="#ed3338"/>
     </linearGradient>
-    <pattern id="grid" width="18" height="18" patternUnits="userSpaceOnUse">
-      <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#eaedf2" stroke-width="0.7"/>
+    <pattern id="grid" width="${GRID}" height="${GRID}" patternUnits="userSpaceOnUse">
+      <path d="M ${GRID} 0 L 0 0 0 ${GRID}" fill="none" stroke="#eaedf2" stroke-width="0.7"/>
     </pattern>
   </defs>
 
@@ -148,25 +164,28 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${
 
   <!-- Header -->
   <g>
-    <g transform="translate(10, 6)">
+    <g transform="translate(10, 5)">
       <rect width="18" height="18" rx="4" ry="4" fill="url(#brand)"/>
       <g transform="translate(3, 3) scale(0.01875)" fill="#ffffff">
         <path d="${LOGO}"/>
       </g>
     </g>
-    <text x="34" y="19" xml:space="preserve"
+    <text x="34" y="18" xml:space="preserve"
           font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif"
           font-weight="600" font-size="11.5" fill="#0f1216"
           >Google Fonts <tspan font-weight="400" fill="#94a0b0">for Onshape</tspan></text>
-    <line x1="0" y1="30" x2="${CANVAS_W}" y2="30" stroke="#eef1f5" stroke-width="0.7"/>
+    <line x1="0" y1="${HEADER_H}" x2="${CANVAS_W}" y2="${HEADER_H}" stroke="#eef1f5" stroke-width="0.7"/>
   </g>
 
-  <!-- Stage -->
+  <!-- Stage: only whole grid cells visible (stage height = 9 × GRID) -->
   <g>
-    <rect x="0" y="30" width="${CANVAS_W}" height="138" fill="#fdfbf8"/>
-    <rect x="0" y="30" width="${CANVAS_W}" height="138" fill="url(#grid)"/>
-    <line x1="0"   y1="125" x2="${CANVAS_W}" y2="125" stroke="#cbd5e1" stroke-width="0.6"/>
-    <line x1="175" y1="40"  x2="175" y2="160" stroke="#cbd5e1" stroke-width="0.6"/>
+    <rect x="0" y="${STAGE_TOP}" width="${CANVAS_W}" height="${STAGE_BOTTOM - STAGE_TOP}" fill="#fdfbf8"/>
+    <rect x="0" y="${STAGE_TOP}" width="${CANVAS_W}" height="${STAGE_BOTTOM - STAGE_TOP}" fill="url(#grid)"/>
+    <!-- Origin axes: V at text start (full stage height), H at baseline -->
+    <line x1="0" y1="${TEXT_BASELINE}" x2="${CANVAS_W}" y2="${TEXT_BASELINE}"
+          stroke="#cbd5e1" stroke-width="0.7"/>
+    <line x1="${TEXT_X}" y1="${STAGE_TOP}" x2="${TEXT_X}" y2="${STAGE_BOTTOM}"
+          stroke="#cbd5e1" stroke-width="0.7"/>
   </g>
 
   <!-- Cycling glyph outlines + endpoint dots -->
@@ -174,9 +193,9 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${
 
   <!-- Caption -->
   <g>
-    <rect x="0" y="168" width="${CANVAS_W}" height="29" fill="#ffffff"/>
-    <line x1="0" y1="168" x2="${CANVAS_W}" y2="168" stroke="#eef1f5" stroke-width="0.7"/>
-    <text x="175" y="186" text-anchor="middle" xml:space="preserve"
+    <rect x="0" y="${CAPTION_TOP}" width="${CANVAS_W}" height="${CANVAS_H - CAPTION_TOP}" fill="#ffffff"/>
+    <line x1="0" y1="${CAPTION_TOP}" x2="${CANVAS_W}" y2="${CAPTION_TOP}" stroke="#eef1f5" stroke-width="0.7"/>
+    <text x="175" y="${CAPTION_TOP + 18}" text-anchor="middle" xml:space="preserve"
           font-family="-apple-system, 'SF Mono', Menlo, monospace"
           font-size="9" font-weight="500" letter-spacing="1.4" fill="#4a5260"
           >1,900+ GOOGLE FONTS <tspan fill="#94a0b0">or</tspan> CUSTOM .otf/.ttf FONT</text>
