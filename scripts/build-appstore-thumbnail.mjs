@@ -101,8 +101,11 @@ const CAPTION_TOP = STAGE_BOTTOM;                 // 169
 // wordmark width is eyeballed (system font; no programmatic measurer
 // available at build time). Refine if the optical centering looks
 // off in either rsvg-convert preview or the live browser render.
-const LOGO_SIZE = 18;
-const LOGO_GAP = 6;                                   // logo → text gap
+const LOGO_SIZE = 32;
+const LOGO_RADIUS = LOGO_SIZE / 4.5;                  // ~7 for 32 — matches the proportions of the 18 px original
+const LOGO_INNER_PAD = LOGO_SIZE * 0.18;              // glyph inset inside the gradient tile
+const LOGO_INNER_SCALE = (LOGO_SIZE - 2 * LOGO_INNER_PAD) / 640;
+const LOGO_GAP = 8;                                   // logo → text gap
 const WORDMARK_APPROX_WIDTH = 134;                    // 'Google Fonts for Onshape' @ 11.5px system semibold + regular
 const HEADER_GROUP_WIDTH = LOGO_SIZE + LOGO_GAP + WORDMARK_APPROX_WIDTH;
 const LOGO_LEFT = (CANVAS_W - HEADER_GROUP_WIDTH) / 2;
@@ -196,8 +199,8 @@ const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W
   <!-- Header -->
   <g>
     <g transform="translate(${LOGO_LEFT}, ${LOGO_TOP})">
-      <rect width="${LOGO_SIZE}" height="${LOGO_SIZE}" rx="4" ry="4" fill="url(#brand)"/>
-      <g transform="translate(3, 3) scale(0.01875)" fill="#ffffff">
+      <rect width="${LOGO_SIZE}" height="${LOGO_SIZE}" rx="${LOGO_RADIUS}" ry="${LOGO_RADIUS}" fill="url(#brand)"/>
+      <g transform="translate(${LOGO_INNER_PAD}, ${LOGO_INNER_PAD}) scale(${LOGO_INNER_SCALE})" fill="#ffffff">
         <path d="${LOGO}"/>
       </g>
     </g>
