@@ -28,7 +28,9 @@ function dataUri(path, mime) {
   return `data:${mime};base64,${b64}`;
 }
 const heroImg = dataUri(`${ROOT}/public/screenshots/in-context.png`, "image/png");
-const panelImg = dataUri(`${ROOT}/public/screenshots/panel.png`, "image/png");
+const dialogImg = dataUri(`${ROOT}/design/pdf/dialog.png`, "image/png");
+const DIALOG_NATIVE_W = 440;
+const DIALOG_NATIVE_H = 804;
 
 // A4 landscape in mm
 const W = 297;
@@ -150,21 +152,32 @@ for (const s of sections) {
 }
 
 // === Right column visuals ===
-// Top: panel screenshot (portrait, 1480×2368 native). Keep aspect.
-const panelAspect = 2368 / 1480;     // ~1.6
-const panelW = 55;                    // mm
-const panelH = panelW * panelAspect;  // ~88 mm
-const panelX = RIGHT_X;
-const panelY = MARGIN + 4;
+// Top: FS feature dialog screenshot (portrait, 440×804 native).
+const dialogAspect = DIALOG_NATIVE_H / DIALOG_NATIVE_W;   // ~1.83
+const dialogW = 52;                                       // mm
+const dialogH = dialogW * dialogAspect;                   // ~95 mm
+const dialogX = RIGHT_X;
+const dialogY = MARGIN + 4;
 
-// Caption arrow + label pointing to panel
-const panelCaptionX = panelX + panelW + 4;
-const panelCaptionY = panelY + 10;
+// Description block sits to the right of the dialog screenshot,
+// using the rest of the right column's width.
+const descX = dialogX + dialogW + 6;
+const descW = (RIGHT_X + COL_W) - descX;
+const dialogDescLines = wrap(
+  "When you click Insert in the side panel, this feature dialog opens inside the Part Studio. Pick a sketch plane to dismiss the warning; the rest of the parameters are pre-filled but editable.",
+  Math.floor(descW / 1.7),
+);
+const dialogParamLines = [
+  "Sketch plane — planar face or datum plane.",
+  "Position — Origin (vertex), Offset X / Y, Rotation.",
+  "Typography — Em-height (overall text size).",
+  "Advanced — toggle to expose the raw curve JSON.",
+];
 
 // Bottom: hero image (in-context, 5120×2630, aspect ~1.95)
 const heroAspect = 2630 / 5120;
 const heroW = COL_W;
-const heroH = heroW * heroAspect;     // ~70 mm
+const heroH = heroW * heroAspect;                         // ~70 mm
 const heroX = RIGHT_X;
 const heroY = H - MARGIN - heroH;
 
@@ -195,16 +208,27 @@ const svg = `<?xml version="1.0" encoding="UTF-8"?>
   ${sectionsSvg}
 
   <!-- ===== RIGHT COLUMN ===== -->
-  <!-- Panel screenshot -->
+  <!-- FS feature dialog screenshot + description -->
   <g>
-    <image x="${panelX}" y="${panelY}" width="${panelW}" height="${panelH}"
-           href="${panelImg}" preserveAspectRatio="xMidYMid meet"/>
-    <rect x="${panelX}" y="${panelY}" width="${panelW}" height="${panelH}"
+    <image x="${dialogX}" y="${dialogY}" width="${dialogW}" height="${dialogH}"
+           href="${dialogImg}" preserveAspectRatio="xMidYMid meet"/>
+    <rect x="${dialogX}" y="${dialogY}" width="${dialogW}" height="${dialogH}"
           fill="none" stroke="#d6dbe2" stroke-width="0.2"/>
-    <text x="${panelX + panelW / 2}" y="${panelY + panelH + 4}"
+    <text x="${dialogX + dialogW / 2}" y="${dialogY + dialogH + 4}"
           text-anchor="middle"
           font-family="Helvetica, Arial, sans-serif"
-          font-size="2.6" fill="${MUTED}">Companion side panel (web)</text>
+          font-size="2.6" fill="${MUTED}">Feature dialog in Onshape</text>
+
+    <!-- Description text to the right of the dialog -->
+    <text x="${descX}" y="${dialogY + 4}"
+          font-family="Helvetica, Arial, sans-serif"
+          font-size="3.6" font-weight="700" fill="${BLUE}" text-decoration="underline">Feature dialog</text>
+    <text x="${descX}" y="${dialogY + 11}"
+          font-family="Helvetica, Arial, sans-serif"
+          font-size="3" fill="${TEXT}">${tspans(dialogDescLines, descX, "1.35em")}</text>
+    <text x="${descX}" y="${dialogY + 11 + dialogDescLines.length * 4 + 4}"
+          font-family="Helvetica, Arial, sans-serif"
+          font-size="3" fill="${NOTE}">${dialogParamLines.map((p, i) => `<tspan x="${descX}" ${i === 0 ? "" : `dy="1.45em"`}>• ${escape(p)}</tspan>`).join("")}</text>
   </g>
 
   <!-- Hero in-context image -->
