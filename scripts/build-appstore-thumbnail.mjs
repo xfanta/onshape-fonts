@@ -105,11 +105,14 @@ const LOGO_SIZE = 32;
 const LOGO_RADIUS = LOGO_SIZE / 4.5;                  // ~7 for 32 — matches the proportions of the 18 px original
 const LOGO_INNER_PAD = LOGO_SIZE * 0.18;              // glyph inset inside the gradient tile
 const LOGO_INNER_SCALE = (LOGO_SIZE - 2 * LOGO_INNER_PAD) / 640;
-const LOGO_GAP = 8;                                   // logo → text gap
-const WORDMARK_APPROX_WIDTH = 134;                    // 'Google Fonts for Onshape' @ 11.5px system semibold + regular
+const LOGO_GAP = 11;                                  // logo → text gap (scales with text)
+const WORDMARK_FONT_SIZE = 20;                        // bumped from 11.5 to match the bigger logo
+const WORDMARK_APPROX_WIDTH = 232;                    // 'Google Fonts for Onshape' @ 20 px system semibold + regular
 const HEADER_GROUP_WIDTH = LOGO_SIZE + LOGO_GAP + WORDMARK_APPROX_WIDTH;
 const LOGO_LEFT = (CANVAS_W - HEADER_GROUP_WIDTH) / 2;
 const LOGO_TOP = (HEADER_H - LOGO_SIZE) / 2;
+// Baseline ~0.35 × font-size below the optical center of the text.
+const WORDMARK_BASELINE_Y = HEADER_H / 2 + WORDMARK_FONT_SIZE * 0.35;
 // Text is LEFT-ALIGNED at TEXT_X with baseline at TEXT_BASELINE.
 // The two thicker "origin" axes meet exactly at this (start, baseline)
 // corner — i.e. at the 0,0 of the text frame.
@@ -204,9 +207,9 @@ const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W
         <path d="${LOGO}"/>
       </g>
     </g>
-    <text x="${LOGO_LEFT + LOGO_SIZE + LOGO_GAP}" y="${HEADER_H / 2 + 4}" xml:space="preserve"
+    <text x="${LOGO_LEFT + LOGO_SIZE + LOGO_GAP}" y="${WORDMARK_BASELINE_Y}" xml:space="preserve"
           font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif"
-          font-weight="600" font-size="11.5" fill="#0f1216"
+          font-weight="600" font-size="${WORDMARK_FONT_SIZE}" fill="#0f1216"
           >Google Fonts <tspan font-weight="400" fill="#94a0b0">for Onshape</tspan></text>
     <line x1="0" y1="${HEADER_H}" x2="${CANVAS_W}" y2="${HEADER_H}" stroke="#eef1f5" stroke-width="0.7"/>
   </g>
