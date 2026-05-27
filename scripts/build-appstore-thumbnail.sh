@@ -31,13 +31,15 @@ fetch_font() {
   curl -s -A "$UA" -o "/tmp/${id}.woff2" "$woff"
 }
 
-fetch_font playfair 'Playfair+Display:ital,wght@1,700'
-fetch_font lobster  'Lobster'
-fetch_font roboto   'Roboto:wght@700'
+fetch_font playfair  'Playfair+Display:ital,wght@1,700'
+fetch_font lobster   'Lobster'
+fetch_font roboto    'Roboto:wght@700'
+fetch_font jetbrains 'JetBrains+Mono:wght@700'
 
 PLAYFAIR=$(base64 < /tmp/playfair.woff2 | tr -d '\n')
 LOBSTER=$(base64 < /tmp/lobster.woff2 | tr -d '\n')
 ROBOTO=$(base64 < /tmp/roboto.woff2 | tr -d '\n')
+JETBRAINS=$(base64 < /tmp/jetbrains.woff2 | tr -d '\n')
 
 # Brand logo path (from design/logo-mark-only.svg, scaled inline).
 # Same glyph used in the header on the website.
@@ -63,22 +65,34 @@ cat > "$OUT" <<SVG
         font-weight: 700;
         src: url(data:font/woff2;base64,${ROBOTO}) format('woff2');
       }
-      .w-playfair { animation: cycA 6s infinite; }
-      .w-lobster  { animation: cycB 6s infinite; }
-      .w-roboto   { animation: cycC 6s infinite; }
+      @font-face {
+        font-family: 'JetBrainsMono';
+        font-weight: 700;
+        src: url(data:font/woff2;base64,${JETBRAINS}) format('woff2');
+      }
+      /* 8 s cycle, 4 fonts × 2 s peak each, ~0.4 s cross-fade overlap. */
+      .w-playfair  { animation: cycA 8s infinite; }
+      .w-lobster   { animation: cycB 8s infinite; }
+      .w-roboto    { animation: cycC 8s infinite; }
+      .w-jetbrains { animation: cycD 8s infinite; }
       @keyframes cycA {
-        0%, 30%      { opacity: 1; }
-        37%, 96%     { opacity: 0; }
+        0%, 20%      { opacity: 1; }
+        25%, 95%     { opacity: 0; }
         100%         { opacity: 1; }
       }
       @keyframes cycB {
-        0%, 30%      { opacity: 0; }
-        37%, 63%     { opacity: 1; }
-        70%, 100%    { opacity: 0; }
+        0%, 20%      { opacity: 0; }
+        25%, 45%     { opacity: 1; }
+        50%, 100%    { opacity: 0; }
       }
       @keyframes cycC {
-        0%, 63%      { opacity: 0; }
-        70%, 96%     { opacity: 1; }
+        0%, 45%      { opacity: 0; }
+        50%, 70%     { opacity: 1; }
+        75%, 100%    { opacity: 0; }
+      }
+      @keyframes cycD {
+        0%, 70%      { opacity: 0; }
+        75%, 95%     { opacity: 1; }
         100%         { opacity: 0; }
       }
     </style>
@@ -125,12 +139,14 @@ cat > "$OUT" <<SVG
   <!-- ===== Word stack — stroked outlines, no fill (looks like sketch curves) ===== -->
   <g text-anchor="middle" font-size="78" fill="none" stroke="#1189e3" stroke-width="1.6"
      stroke-linejoin="round" stroke-linecap="round" letter-spacing="-1">
-    <text class="w-playfair" opacity="1" x="175" y="142"
+    <text class="w-playfair"  opacity="1" x="175" y="142"
           font-family="Playfair, Georgia, serif" font-style="italic" font-weight="700">${WORD}</text>
-    <text class="w-lobster"  opacity="0" x="175" y="142"
+    <text class="w-lobster"   opacity="0" x="175" y="142"
           font-family="Lobster, 'Brush Script MT', cursive">${WORD}</text>
-    <text class="w-roboto"   opacity="0" x="175" y="142"
+    <text class="w-roboto"    opacity="0" x="175" y="142"
           font-family="Roboto, 'Helvetica Neue', Arial, sans-serif" font-weight="700">${WORD}</text>
+    <text class="w-jetbrains" opacity="0" x="175" y="142" font-size="62"
+          font-family="JetBrainsMono, 'SF Mono', Menlo, 'Courier New', monospace" font-weight="700">${WORD}</text>
   </g>
 
   <!-- ===== Bottom caption ===== -->
