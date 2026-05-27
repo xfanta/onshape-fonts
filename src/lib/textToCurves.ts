@@ -227,6 +227,30 @@ export function textToCurves(
     0,
   );
 
+  // Pivot offset (font units). After applying alignment per line, we
+  // also translate ALL lines by this much so that the user-chosen
+  // origin in Onshape lines up with the corresponding edge of the
+  // FIRST line:
+  //   left     → left edge of first line (no shift)
+  //   center   → horizontal center of first line (= maxLineWidth / 2,
+  //              because each line is centered around that axis)
+  //   right    → right edge of first line (= maxLineWidth, because
+  //              each line ends at that axis)
+  //   justify  → same as left; the first line still starts at 0 in
+  //              the justified frame
+  // Y always stays at baseline of the first line (y=0 in output),
+  // which is what users mean by 'put the text here'.
+  let pivotShiftX = 0;
+  switch (align) {
+    case "center":
+      pivotShiftX = -maxLineWidth / 2;
+      break;
+    case "right":
+      pivotShiftX = -maxLineWidth;
+      break;
+    // "left" and "justify" → 0
+  }
+
   const glyphs: GlyphCurves[] = [];
 
   measurements.forEach((m, lineIndex) => {
@@ -252,7 +276,7 @@ export function textToCurves(
       // "left" → 0
     }
 
-    let xCursor = lineStartX;
+    let xCursor = lineStartX + pivotShiftX;
     const yOffsetUnits = -lineIndex * lineHeight * unitsPerEm;
 
     m.chars.forEach((char, i) => {
