@@ -51,8 +51,10 @@ Thumbs.db
 ehthumbs.db
 Desktop.ini
 
-# Local AI / agent state (Claude Code, etc.)
+# Local AI / agent state and hint files (Claude Code, Cursor, etc.)
 .claude/
+AGENTS.md
+CLAUDE.md
 
 # Design source files — kept locally for editing, not part of the
 # published repo. Public-facing assets live under /public.
