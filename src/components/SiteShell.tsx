@@ -17,6 +17,8 @@ const GRADIENT =
   "linear-gradient(135deg, #F48635 0%, #ed3338 100%)";
 const APPSTORE_URL =
   "https://cad.onshape.com/appstore/apps/Utilities/6a0f2d2039092b5cfc0f712a";
+export const DONATE_URL =
+  "https://donate.stripe.com/8x2dRafZtcY6fJI6Mj57W01";
 
 function SiteHeader() {
   return (
@@ -88,6 +90,14 @@ function SiteFooter() {
           <Link href="/terms" className="hover:text-gray-900">
             Terms
           </Link>
+          <a
+            href={DONATE_URL}
+            target="_blank"
+            rel="noreferrer"
+            className="hover:text-gray-900"
+          >
+            Donate
+          </a>
           <a
             href="https://github.com/xfanta/onshape-fonts/issues"
             target="_blank"

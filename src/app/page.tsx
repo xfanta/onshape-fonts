@@ -395,6 +395,17 @@ export default function Home() {
                   </svg>
                   Add to Onshape
                 </a>
+                <p style={{ marginTop: 16, fontSize: 13, color: "#6b7280", textAlign: "center" }}>
+                  Saved you a few hours?{" "}
+                  <a
+                    href="https://donate.stripe.com/8x2dRafZtcY6fJI6Mj57W01"
+                    target="_blank"
+                    rel="noreferrer"
+                    style={{ color: "#ed3338", textDecoration: "underline" }}
+                  >
+                    Buy me a coffee →
+                  </a>
+                </p>
               </div>
             </div>
           </div>
