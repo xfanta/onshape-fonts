@@ -1,6 +1,6 @@
 FeatureScript 2960;
 import(path : "onshape/std/geometry.fs", version : "2960.0");
-import(path : "80d7bbe775acb196eee04332", version : "289655f5aa9fbb801bcea950");
+import(path : "e72b0d6629740a2630f45f7e", version : "8b152f1c91ee99d27a0f046d");
 
 /**
  * googleFontsToSketch — render glyph outlines, supplied as JSON, into a sketch.
