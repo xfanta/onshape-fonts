@@ -130,20 +130,33 @@ const cycleSec = 8;
 const slots = sources.length;            // 4
 const slotPct = 100 / slots;             // 25%
 const peakPct = slotPct * 0.8;           // 20% of cycle peak visible
+// Cross-fades happen across slot boundaries: at boundary X, the
+// outgoing font fades 1 → 0 in [X − cross, X] while the incoming
+// font fades 0 → 1 in the same window. For font 0 the wrap boundary
+// is at 100 % = 0 %, so its fade-in lives in [100 − cross, 100].
 function keyframesFor(i) {
-  const startFade = i * slotPct;
-  const peakEnd = startFade + peakPct;
-  const fadeOut = startFade + slotPct;
-  // wrap-around for the last slot
-  const fmt = (p) => `${p.toFixed(2)}%`;
+  const slotStart = i * slotPct;
+  const slotEnd = (i + 1) * slotPct;
+  const peakEnd = slotStart + peakPct;
+  const cross = slotPct - peakPct;
+  const fmt = (p) => (p === 0 ? "0%" : p === 100 ? "100%" : `${p.toFixed(2)}%`);
   if (i === 0) {
-    return `0%, ${fmt(peakPct)} { opacity: 1; }
-      ${fmt(slotPct)}, ${fmt(100 - slotPct + peakPct)} { opacity: 0; }
+    // Visible at both 0 % and 100 % so the cycle wraps seamlessly.
+    return `0%, ${fmt(peakEnd)} { opacity: 1; }
+      ${fmt(slotEnd)}, ${fmt(100 - cross)} { opacity: 0; }
       100% { opacity: 1; }`;
   }
-  return `0%, ${fmt(startFade)} { opacity: 0; }
-      ${fmt(startFade + (slotPct - peakPct))}, ${fmt(peakEnd + (slotPct - peakPct))} { opacity: 1; }
-      ${fmt(fadeOut + (slotPct - peakPct))}, 100% { opacity: 0; }`;
+  // Other fonts: hidden at 0 % and 100 %, fade in just before their
+  // slot starts, fade out exactly at their slot end.
+  if (slotEnd >= 100) {
+    // Last font wraps around — its fade-out window ends at 100 %.
+    return `0%, ${fmt(slotStart - cross)} { opacity: 0; }
+      ${fmt(slotStart)}, ${fmt(peakEnd)} { opacity: 1; }
+      100% { opacity: 0; }`;
+  }
+  return `0%, ${fmt(slotStart - cross)} { opacity: 0; }
+      ${fmt(slotStart)}, ${fmt(peakEnd)} { opacity: 1; }
+      ${fmt(slotEnd)}, 100% { opacity: 0; }`;
 }
 
 // Logo path (from design/logo-mark-only.svg).

@@ -8,15 +8,15 @@
       @keyframes cyc0 { 0%, 20.00% { opacity: 1; }
       25.00%, 95.00% { opacity: 0; }
       100% { opacity: 1; } }
-      @keyframes cyc1 { 0%, 25.00% { opacity: 0; }
-      30.00%, 50.00% { opacity: 1; }
-      55.00%, 100% { opacity: 0; } }
-      @keyframes cyc2 { 0%, 50.00% { opacity: 0; }
-      55.00%, 75.00% { opacity: 1; }
-      80.00%, 100% { opacity: 0; } }
-      @keyframes cyc3 { 0%, 75.00% { opacity: 0; }
-      80.00%, 100.00% { opacity: 1; }
-      105.00%, 100% { opacity: 0; } }
+      @keyframes cyc1 { 0%, 20.00% { opacity: 0; }
+      25.00%, 45.00% { opacity: 1; }
+      50.00%, 100% { opacity: 0; } }
+      @keyframes cyc2 { 0%, 45.00% { opacity: 0; }
+      50.00%, 70.00% { opacity: 1; }
+      75.00%, 100% { opacity: 0; } }
+      @keyframes cyc3 { 0%, 70.00% { opacity: 0; }
+      75.00%, 95.00% { opacity: 1; }
+      100% { opacity: 0; } }
     </style>
     <linearGradient id="brand" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#F48635"/>
