@@ -60,9 +60,7 @@ const css = `
 .lp-trust .check{display:inline-flex;align-items:center;gap:6px}
 .lp-trust .check svg{width:13px;height:13px;color:#22a06b}
 
-.lp-hero-vis{position:relative;border:1px solid #e3e7ec;
-  border-radius:10px;overflow:hidden;
-  box-shadow:0 24px 60px -20px rgba(15,30,60,.18),0 2px 6px rgba(15,30,60,.05)}
+.lp-hero-vis{position:relative}
 
 .lp-section{padding:80px 56px;max-width:1280px;margin:0 auto}
 .lp-section-h{display:flex;flex-direction:column;align-items:center;text-align:center;
@@ -90,21 +88,6 @@ const css = `
 .lp-demo-label{position:absolute;bottom:22px;left:24px;color:rgba(255,255,255,.55);
   font-family:"SFMono-Regular",Menlo,monospace;font-size:11px;letter-spacing:.08em;z-index:1}
 
-.lp-shots{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
-@media (max-width:760px){.lp-shots{grid-template-columns:1fr}}
-.lp-shot{aspect-ratio:4/3;border:1px solid #e3e7ec;border-radius:8px;background:#f5f7fa;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
-  background-image:
-    repeating-linear-gradient(-45deg,transparent 0 10px,rgba(15,30,60,.04) 10px 11px);
-  color:#94a0b0;font-family:"SFMono-Regular",Menlo,monospace;font-size:11.5px;
-  letter-spacing:.04em;text-align:center;padding:20px;position:relative;overflow:hidden}
-.lp-shot::before{content:"";position:absolute;top:0;left:0;right:0;height:24px;
-  background:#fff;border-bottom:1px solid #e3e7ec;
-  background-image:radial-gradient(circle at 10px 12px,#ff5f57 4px,transparent 5px),
-                   radial-gradient(circle at 24px 12px,#febc2e 4px,transparent 5px),
-                   radial-gradient(circle at 38px 12px,#28c840 4px,transparent 5px)}
-.lp-shot-cap{font-weight:500;color:#4a5260;font-family:inherit;font-size:13px;letter-spacing:0;
-  margin-top:auto;background:#fff;padding:5px 10px;border-radius:4px;border:1px solid #e3e7ec}
 
 .lp-price-wrap{background:#fffaf6;border-top:1px solid #eceff3}
 .lp-price{display:flex;justify-content:center}
@@ -220,7 +203,6 @@ export default function Home() {
                 width: "100%",
                 height: "auto",
                 display: "block",
-                borderRadius: 8,
               }}
             />
           </div>
@@ -255,19 +237,23 @@ export default function Home() {
               the text, font, or layout, just open the panel again.
             </p>
           </div>
-          <div className="lp-shots">
-            <div className="lp-shot">
-              <span>screenshot · part studio with panel open</span>
-              <div className="lp-shot-cap">Side panel</div>
-            </div>
-            <div className="lp-shot">
-              <span>screenshot · text inserted into sketch</span>
-              <div className="lp-shot-cap">Native curves</div>
-            </div>
-            <div className="lp-shot">
-              <span>screenshot · extruded text on part</span>
-              <div className="lp-shot-cap">Extrude / emboss</div>
-            </div>
+          <div style={{ marginTop: 24 }}>
+            <Image
+              src="/screenshots/in-context.png"
+              alt="Google Fonts panel open in Onshape Part Studio with text inserted as native sketch curves"
+              width={5120}
+              height={2630}
+              sizes="(max-width: 1280px) 100vw, 1280px"
+              style={{
+                width: "100%",
+                height: "auto",
+                display: "block",
+                borderRadius: 12,
+                border: "1px solid #e3e7ec",
+                boxShadow:
+                  "0 24px 60px -20px rgba(15,30,60,.18), 0 2px 6px rgba(15,30,60,.05)",
+              }}
+            />
           </div>
         </section>
 
