@@ -21,7 +21,10 @@ import { fileURLToPath } from "node:url";
 import opentype from "opentype.js";
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = `${ROOT}/design/appstore-summary-animated.svg`;
+const OUT_FULL = `${ROOT}/design/appstore-summary-animated.svg`;
+// Chromeless variant for the landing page (no header / caption,
+// just the sketch stage). Lives in /public so Next can serve it.
+const OUT_STAGE = `${ROOT}/public/landing-hero-animated.svg`;
 const WORD = "Hello";
 
 // Google CSS API returns TTF when no User-Agent header is sent.
@@ -153,8 +156,8 @@ const animClasses = sources.map((_, i) =>
   `.g${i} { animation: cyc${i} ${cycleSec}s infinite; }`
 ).join("\n      ");
 
-const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${CANVAS_H}" width="${CANVAS_W}" height="${CANVAS_H}">
-  <defs>
+// Shared bits used by both SVG outputs.
+const sharedDefs = `<defs>
     <style>
       ${animClasses}
       ${keyframeBlocks}
@@ -166,7 +169,22 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${
     <pattern id="grid" width="${GRID}" height="${GRID}" patternUnits="userSpaceOnUse">
       <path d="M ${GRID} 0 L 0 0 0 ${GRID}" fill="none" stroke="#eaedf2" stroke-width="0.7"/>
     </pattern>
-  </defs>
+  </defs>`;
+
+// Stage = grid + origin axes + cycling glyphs. Same in both outputs.
+const stage = `<g>
+    <rect x="0" y="${STAGE_TOP}" width="${CANVAS_W}" height="${STAGE_BOTTOM - STAGE_TOP}" fill="#fdfbf8"/>
+    <rect x="0" y="${STAGE_TOP}" width="${CANVAS_W}" height="${STAGE_BOTTOM - STAGE_TOP}" fill="url(#grid)"/>
+    <line x1="0" y1="${TEXT_BASELINE}" x2="${CANVAS_W}" y2="${TEXT_BASELINE}"
+          stroke="#cbd5e1" stroke-width="0.7"/>
+    <line x1="${TEXT_X}" y1="${STAGE_TOP}" x2="${TEXT_X}" y2="${STAGE_BOTTOM}"
+          stroke="#cbd5e1" stroke-width="0.7"/>
+  </g>
+  ${glyphGroups}`;
+
+// === Output A: App Store summary (full chrome) ===
+const fullSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${CANVAS_H}" width="${CANVAS_W}" height="${CANVAS_H}">
+  ${sharedDefs}
 
   <rect width="${CANVAS_W}" height="${CANVAS_H}" fill="#ffffff"/>
 
@@ -185,19 +203,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${
     <line x1="0" y1="${HEADER_H}" x2="${CANVAS_W}" y2="${HEADER_H}" stroke="#eef1f5" stroke-width="0.7"/>
   </g>
 
-  <!-- Stage: only whole grid cells visible (stage height = 9 × GRID) -->
-  <g>
-    <rect x="0" y="${STAGE_TOP}" width="${CANVAS_W}" height="${STAGE_BOTTOM - STAGE_TOP}" fill="#fdfbf8"/>
-    <rect x="0" y="${STAGE_TOP}" width="${CANVAS_W}" height="${STAGE_BOTTOM - STAGE_TOP}" fill="url(#grid)"/>
-    <!-- Origin axes: V at text start (full stage height), H at baseline -->
-    <line x1="0" y1="${TEXT_BASELINE}" x2="${CANVAS_W}" y2="${TEXT_BASELINE}"
-          stroke="#cbd5e1" stroke-width="0.7"/>
-    <line x1="${TEXT_X}" y1="${STAGE_TOP}" x2="${TEXT_X}" y2="${STAGE_BOTTOM}"
-          stroke="#cbd5e1" stroke-width="0.7"/>
-  </g>
-
-  <!-- Cycling glyph outlines + endpoint dots -->
-  ${glyphGroups}
+  ${stage}
 
   <!-- Caption -->
   <g>
@@ -211,6 +217,18 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${
 </svg>
 `;
 
-writeFileSync(OUT, svg);
-const size = Buffer.byteLength(svg);
-console.log(`Built ${OUT} (${size} bytes, ${sources.map(s => `${s.id}=${s.points.length}pts`).join(", ")})`);
+// === Output B: Landing hero (chromeless — just the stage portion) ===
+// Same glyph coordinates, but the viewBox is windowed to the stage
+// region so header + caption simply aren't in view.
+const STAGE_H = STAGE_BOTTOM - STAGE_TOP;
+const stageSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 ${STAGE_TOP} ${CANVAS_W} ${STAGE_H}" width="${CANVAS_W}" height="${STAGE_H}" preserveAspectRatio="xMidYMid meet">
+  ${sharedDefs}
+  ${stage}
+</svg>
+`;
+
+writeFileSync(OUT_FULL, fullSvg);
+writeFileSync(OUT_STAGE, stageSvg);
+const ptStr = sources.map(s => `${s.id}=${s.points.length}pts`).join(", ");
+console.log(`Built ${OUT_FULL} (${Buffer.byteLength(fullSvg)} bytes, ${ptStr})`);
+console.log(`Built ${OUT_STAGE} (${Buffer.byteLength(stageSvg)} bytes)`);

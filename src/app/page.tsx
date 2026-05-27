@@ -61,6 +61,9 @@ const css = `
 .lp-trust .check svg{width:13px;height:13px;color:#22a06b}
 
 .lp-hero-vis{position:relative}
+.lp-hero-anim{display:block;width:100%;max-width:440px;height:auto;
+  margin:20px 0 28px;border:1px solid #e3e7ec;border-radius:8px;
+  background:#fdfbf8}
 
 .lp-section{padding:80px 56px;max-width:1280px;margin:0 auto}
 .lp-section-h{display:flex;flex-direction:column;align-items:center;text-align:center;
@@ -136,6 +139,15 @@ export default function Home() {
               <br />
               into <em>real geometry.</em>
             </h1>
+            {/* Animated SVG preview — same geometry as the App Store
+                summary, just chromeless. Plain <img> because next/image
+                pre-rasterizes SVGs and we want the CSS animations
+                inside to keep cycling. */}
+            <img
+              src="/landing-hero-animated.svg"
+              alt="Hello rendered as native sketch curves in four different fonts (Playfair, Lobster, Roboto, JetBrains Mono)"
+              className="lp-hero-anim"
+            />
             <p className="lp-lead">
               Bring all 1,900+ Google Fonts — or any .ttf / .otf you upload
               — straight into your Part Studio. Pick a face, type your text,
