@@ -260,11 +260,6 @@ export async function addTextToSketchFeature(
           expression: options.rotationExpression ?? "0 deg",
         },
         {
-          btType: "BTMParameterBoolean-144",
-          parameterId: "showRawData",
-          value: false,
-        },
-        {
           btType: "BTMParameterString-149",
           parameterId: "curveData",
           value: options.curveJson,

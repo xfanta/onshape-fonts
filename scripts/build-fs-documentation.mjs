@@ -171,7 +171,7 @@ const dialogParamLines = [
   "Sketch plane — planar face or datum plane.",
   "Position — Origin (vertex), Offset X / Y, Rotation.",
   "Typography — Em-height (overall text size).",
-  "Advanced — toggle to expose the raw curve JSON.",
+  "Advanced — paste-in field for JSON curve data from /preview.",
 ];
 
 // Bottom: hero image (in-context, 5120×2630, aspect ~1.95)
