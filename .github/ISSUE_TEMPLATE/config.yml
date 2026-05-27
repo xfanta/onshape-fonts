@@ -1,0 +1,17 @@
+# Disable blank issues — funnel everything through the templates
+# (bug / feature / commercial license). The 'Contact' section below
+# adds non-issue routes the New Issue picker can show inline.
+blank_issues_enabled: false
+
+contact_links:
+  - name: 💬 Question or general discussion
+    url: https://github.com/xfanta/onshape-fonts/discussions
+    about: Not a bug or feature request? Ask in Discussions — usage tips, font recommendations, FeatureScript curiosities, etc.
+
+  - name: ☕ Sponsor the project
+    url: https://donate.stripe.com/8x2dRafZtcY6fJI6Mj57W01
+    about: The add-in is free and open-source. If it saved you time, a small tip helps cover hosting and ongoing work.
+
+  - name: 🛡️ Reporting a security vulnerability
+    url: https://github.com/xfanta/onshape-fonts/security/policy
+    about: Please don't open a public issue for security bugs — follow the disclosure process described in SECURITY.md.
