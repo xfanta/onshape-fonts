@@ -6,6 +6,8 @@
 
 **Type that turns into real geometry.**
 
+<img src="./public/landing-hero-animated.svg" alt="Hello rendered as native sketch curves in four different fonts (Playfair, Lobster, Roboto, JetBrains Mono)" width="440" />
+
 Bring all 1,900+ Google Fonts — or any `.ttf` / `.otf` you upload — straight into your Part Studio. Pick a face, type your text, click Insert. The result lands on the active sketch plane as native curves you can resize, rotate, and reposition anytime from the standard feature dialog.
 
 [**Add to Onshape — Free**](https://cad.onshape.com/appstore/apps/Utilities/6a0f2d2039092b5cfc0f712a) · [**Live preview**](https://onshape-fonts.xfanta.com/preview) · [**Website**](https://onshape-fonts.xfanta.com)
