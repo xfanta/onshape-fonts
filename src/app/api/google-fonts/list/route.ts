@@ -18,7 +18,15 @@ export async function GET() {
     }));
     return NextResponse.json(
       { enabled: true, families: slim },
-      { headers: { "Cache-Control": "public, max-age=3600" } },
+      {
+        headers: {
+          // CDN + browser cache 24 h. Worst case: a brand-new Google
+          // font shows up to a user 24 h late. Saves ~24× lambda
+          // invocations vs. the previous 1 h TTL.
+          "Cache-Control":
+            "public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400",
+        },
+      },
     );
   } catch (e) {
     return NextResponse.json(
