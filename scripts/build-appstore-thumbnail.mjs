@@ -1,0 +1,189 @@
+#!/usr/bin/env node
+// Build the animated SVG used as Onshape App Store summary image.
+//
+// What's new vs the bash version: instead of embedding fonts as woff2
+// and letting the browser render them, we run opentype.js, extract
+// the actual cubic Bézier outlines + segment endpoints for each font,
+// and bake them into the SVG as <path d="..."> + <circle> dots.
+//
+// Benefits:
+//   - Real anchor-point vertices at segment endpoints (true SketchViewer look)
+//   - Renders identically everywhere (no @font-face fallback risk)
+//   - Smaller file (no woff2 bytes), and renderable by rsvg-convert
+//
+// Run from repo root:
+//   node scripts/build-appstore-thumbnail.mjs
+
+import { execSync } from "node:child_process";
+import { readFileSync, writeFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import opentype from "opentype.js";
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+const OUT = `${ROOT}/design/appstore-summary-animated.svg`;
+const WORD = "Hello";
+
+// Google CSS API returns TTF when no User-Agent header is sent.
+function fetchTTF(id, family) {
+  const url = `https://fonts.googleapis.com/css2?family=${family}&text=${encodeURIComponent(WORD)}`;
+  const css = execSync(`curl -s '${url}'`).toString();
+  const ttfUrl = css.match(/https:\/\/fonts\.gstatic\.com\/[^)]+/)?.[0];
+  if (!ttfUrl) throw new Error(`No font URL for ${family}`);
+  const tmp = `/tmp/${id}.ttf`;
+  execSync(`curl -s -o '${tmp}' '${ttfUrl}'`);
+  return tmp;
+}
+
+// Render "Hello" in `fontPath` at the given font size, centered on
+// (cxTarget, cyTarget) inside the canvas. Returns { d, points }.
+function renderWord(fontPath, fontSize, cxTarget, baselineY) {
+  const buf = readFileSync(fontPath);
+  const ab = buf.buffer.slice(buf.byteOffset, buf.byteOffset + buf.byteLength);
+  const font = opentype.parse(ab);
+  const path = font.getPath(WORD, 0, 0, fontSize);
+  const bbox = path.getBoundingBox();
+  const w = bbox.x2 - bbox.x1;
+  // shift so text is horizontally centered on cxTarget and baseline at baselineY
+  const dx = cxTarget - (bbox.x1 + w / 2);
+  const dy = baselineY;
+  // Apply translation to commands (so points and path d are in canvas coords).
+  for (const c of path.commands) {
+    if (c.x !== undefined) c.x += dx;
+    if (c.y !== undefined) c.y += dy;
+    if (c.x1 !== undefined) c.x1 += dx;
+    if (c.y1 !== undefined) c.y1 += dy;
+    if (c.x2 !== undefined) c.x2 += dx;
+    if (c.y2 !== undefined) c.y2 += dy;
+  }
+  const points = [];
+  for (const c of path.commands) {
+    if (c.type === "M" || c.type === "L" || c.type === "C" || c.type === "Q") {
+      points.push([+c.x.toFixed(2), +c.y.toFixed(2)]);
+    }
+  }
+  return { d: path.toPathData(2), points };
+}
+
+// === Fetch fonts ===
+console.log("Fetching fonts...");
+const sources = [
+  { id: "playfair",  family: "Playfair+Display:ital,wght@1,700", size: 78 },
+  { id: "lobster",   family: "Lobster",                          size: 78 },
+  { id: "roboto",    family: "Roboto:wght@700",                  size: 78 },
+  { id: "jetbrains", family: "JetBrains+Mono:wght@700",          size: 62 },
+];
+for (const s of sources) {
+  s.path = fetchTTF(s.id, s.family);
+}
+
+// === Extract curves + vertices ===
+console.log("Extracting glyph curves...");
+const CANVAS_W = 350;
+const CANVAS_H = 197;
+const TEXT_CX = 175;
+const TEXT_BASELINE = 138;
+for (const s of sources) {
+  Object.assign(s, renderWord(s.path, s.size, TEXT_CX, TEXT_BASELINE));
+}
+
+// === Build SVG ===
+const cycleSec = 8;
+const slots = sources.length;            // 4
+const slotPct = 100 / slots;             // 25%
+const peakPct = slotPct * 0.8;           // 20% of cycle peak visible
+function keyframesFor(i) {
+  const startFade = i * slotPct;
+  const peakEnd = startFade + peakPct;
+  const fadeOut = startFade + slotPct;
+  // wrap-around for the last slot
+  const fmt = (p) => `${p.toFixed(2)}%`;
+  if (i === 0) {
+    return `0%, ${fmt(peakPct)} { opacity: 1; }
+      ${fmt(slotPct)}, ${fmt(100 - slotPct + peakPct)} { opacity: 0; }
+      100% { opacity: 1; }`;
+  }
+  return `0%, ${fmt(startFade)} { opacity: 0; }
+      ${fmt(startFade + (slotPct - peakPct))}, ${fmt(peakEnd + (slotPct - peakPct))} { opacity: 1; }
+      ${fmt(fadeOut + (slotPct - peakPct))}, 100% { opacity: 0; }`;
+}
+
+// Logo path (from design/logo-mark-only.svg).
+const LOGO = `M200 64C213.3 64 224 74.7 224 88L224 144L360 144C373.3 144 384 154.7 384 168C384 181.3 373.3 192 360 192L343.8 192L327.3 230.4C308.7 273.9 282.1 313.2 249.4 346.4C263.3 355.6 278 363.8 293.4 370.8L354.3 398.7L426.1 238.2C430 229.6 438.5 224 448 224C457.5 224 466 229.6 469.9 238.2L605.9 542.2C611.3 554.3 605.9 568.5 593.8 573.9C581.7 579.3 567.5 573.9 562.1 561.8L532.7 496L363.4 496L334 561.8C328.6 573.9 314.4 579.3 302.3 573.9C290.2 568.5 284.8 554.3 290.2 542.2L334.8 442.5L273.5 414.4C252 404.5 231.6 392.7 212.6 379.2C195.1 392.8 176.3 404.9 156.4 415.3L99.1 445.3C87.4 451.5 72.9 446.9 66.7 435.2C60.5 423.5 65.1 409 76.8 402.8L134 372.8C148 365.5 161.4 357.1 174.1 348C146.6 322.4 123 292.8 104.1 260C97.5 248.5 101.4 233.8 112.9 227.2C124.4 220.6 139.1 224.5 145.7 236C163.1 266.3 185.2 293.5 211.1 316.7C241.6 286.9 266.2 251.2 283.3 211.4L291.6 192L56 192C42.7 192 32 181.3 32 168C32 154.7 42.8 144 56 144L176 144L176 88C176 74.7 186.7 64 200 64zM511.2 448L448 306.8L384.8 448L511.2 448z`;
+
+const glyphGroups = sources.map((s, i) => {
+  const dots = s.points
+    .map((p) => `<circle cx="${p[0]}" cy="${p[1]}" r="1.4"/>`)
+    .join("");
+  return `<g class="g${i}" opacity="${i === 0 ? 1 : 0}">
+      <path d="${s.d}" fill="none" stroke="#1189e3" stroke-width="1" stroke-linejoin="round" stroke-linecap="round"/>
+      <g fill="#1189e3" stroke="#ffffff" stroke-width="0.5">${dots}</g>
+    </g>`;
+}).join("\n    ");
+
+const keyframeBlocks = sources.map((_, i) =>
+  `@keyframes cyc${i} { ${keyframesFor(i)} }`
+).join("\n      ");
+
+const animClasses = sources.map((_, i) =>
+  `.g${i} { animation: cyc${i} ${cycleSec}s infinite; }`
+).join("\n      ");
+
+const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${CANVAS_H}" width="${CANVAS_W}" height="${CANVAS_H}">
+  <defs>
+    <style>
+      ${animClasses}
+      ${keyframeBlocks}
+    </style>
+    <linearGradient id="brand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F48635"/>
+      <stop offset="100%" stop-color="#ed3338"/>
+    </linearGradient>
+    <pattern id="grid" width="18" height="18" patternUnits="userSpaceOnUse">
+      <path d="M 18 0 L 0 0 0 18" fill="none" stroke="#eaedf2" stroke-width="0.7"/>
+    </pattern>
+  </defs>
+
+  <rect width="${CANVAS_W}" height="${CANVAS_H}" fill="#ffffff"/>
+
+  <!-- Header -->
+  <g>
+    <g transform="translate(10, 6)">
+      <rect width="18" height="18" rx="4" ry="4" fill="url(#brand)"/>
+      <g transform="translate(3, 3) scale(0.01875)" fill="#ffffff">
+        <path d="${LOGO}"/>
+      </g>
+    </g>
+    <text x="34" y="19" xml:space="preserve"
+          font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif"
+          font-weight="600" font-size="11.5" fill="#0f1216"
+          >Google Fonts <tspan font-weight="400" fill="#94a0b0">for Onshape</tspan></text>
+    <line x1="0" y1="30" x2="${CANVAS_W}" y2="30" stroke="#eef1f5" stroke-width="0.7"/>
+  </g>
+
+  <!-- Stage -->
+  <g>
+    <rect x="0" y="30" width="${CANVAS_W}" height="138" fill="#fdfbf8"/>
+    <rect x="0" y="30" width="${CANVAS_W}" height="138" fill="url(#grid)"/>
+    <line x1="0"   y1="125" x2="${CANVAS_W}" y2="125" stroke="#cbd5e1" stroke-width="0.6"/>
+    <line x1="175" y1="40"  x2="175" y2="160" stroke="#cbd5e1" stroke-width="0.6"/>
+  </g>
+
+  <!-- Cycling glyph outlines + endpoint dots -->
+  ${glyphGroups}
+
+  <!-- Caption -->
+  <g>
+    <rect x="0" y="168" width="${CANVAS_W}" height="29" fill="#ffffff"/>
+    <line x1="0" y1="168" x2="${CANVAS_W}" y2="168" stroke="#eef1f5" stroke-width="0.7"/>
+    <text x="175" y="186" text-anchor="middle" xml:space="preserve"
+          font-family="-apple-system, 'SF Mono', Menlo, monospace"
+          font-size="9" font-weight="500" letter-spacing="1.4" fill="#4a5260"
+          >1,900+ GOOGLE FONTS <tspan fill="#94a0b0">or</tspan> CUSTOM .otf/.ttf FONT</text>
+  </g>
+</svg>
+`;
+
+writeFileSync(OUT, svg);
+const size = Buffer.byteLength(svg);
+console.log(`Built ${OUT} (${size} bytes, ${sources.map(s => `${s.id}=${s.points.length}pts`).join(", ")})`);
