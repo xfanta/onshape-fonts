@@ -39,3 +39,24 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# IDE / editor scratch
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS junk
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Local AI / agent state (Claude Code, etc.)
+.claude/
+
+# Design source files — kept locally for editing, not part of the
+# published repo. Public-facing assets live under /public.
+/design/
+
+# Local archives / scratch zips
+*.zip

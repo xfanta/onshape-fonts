@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="./design/logo-brand-512.png" alt="Google Fonts for Onshape" width="96" height="96" />
+<img src="./public/logo-brand-512.png" alt="Google Fonts for Onshape" width="96" height="96" />
 
 # Google Fonts for Onshape
 
@@ -124,7 +124,7 @@ featurescript/
   googleFontsToSketch.fs        # the published Onshape feature
 fixtures/                       # JSON fixtures for manual FS testing
 public/screenshots/             # images used on the landing page + this README
-design/                         # logo source files (SVG + PNG renders)
+public/logo-brand-512.png       # brand mark used in the README header
 ```
 
 ## Author
