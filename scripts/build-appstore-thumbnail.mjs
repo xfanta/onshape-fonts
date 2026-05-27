@@ -101,13 +101,13 @@ const CAPTION_TOP = STAGE_BOTTOM;                 // 169
 // wordmark width is eyeballed (system font; no programmatic measurer
 // available at build time). Refine if the optical centering looks
 // off in either rsvg-convert preview or the live browser render.
-const LOGO_SIZE = 32;
-const LOGO_RADIUS = LOGO_SIZE / 4.5;                  // ~7 for 32 — matches the proportions of the 18 px original
+const LOGO_SIZE = 29;
+const LOGO_RADIUS = LOGO_SIZE / 4.5;                  // matches the proportions of the 18 px original
 const LOGO_INNER_PAD = LOGO_SIZE * 0.18;              // glyph inset inside the gradient tile
 const LOGO_INNER_SCALE = (LOGO_SIZE - 2 * LOGO_INNER_PAD) / 640;
-const LOGO_GAP = 11;                                  // logo → text gap (scales with text)
-const WORDMARK_FONT_SIZE = 20;                        // bumped from 11.5 to match the bigger logo
-const WORDMARK_APPROX_WIDTH = 232;                    // 'Google Fonts for Onshape' @ 20 px system semibold + regular
+const LOGO_GAP = 10;                                  // logo → text gap (scales with text)
+const WORDMARK_FONT_SIZE = 18;                        // 10 % smaller than the previous 20
+const WORDMARK_APPROX_WIDTH = 209;                    // 'Google Fonts for Onshape' @ 18 px system semibold + regular
 const HEADER_GROUP_WIDTH = LOGO_SIZE + LOGO_GAP + WORDMARK_APPROX_WIDTH;
 const LOGO_LEFT = (CANVAS_W - HEADER_GROUP_WIDTH) / 2;
 const LOGO_TOP = (HEADER_H - LOGO_SIZE) / 2;
