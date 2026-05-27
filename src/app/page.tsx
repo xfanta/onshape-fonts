@@ -55,6 +55,12 @@ const css = `
 .lp-cta.alt{background:transparent;color:var(--c1);border-color:var(--c1)}
 .lp-cta.alt:hover{background:rgba(var(--c1-rgb),.08);box-shadow:none;filter:none}
 .lp-cta svg{width:15px;height:15px}
+/* On phones stretch the hero CTAs to fill the column width so the
+   thumbable tap targets land where the user's eye already is. */
+@media (max-width:640px){
+  .lp-ctas{flex-direction:column;align-items:stretch}
+  .lp-ctas .lp-cta{width:100%;justify-content:center}
+}
 .lp-trust{display:flex;align-items:center;gap:18px;margin-top:26px;
   font-size:12.5px;color:#6b7280;flex-wrap:wrap}
 .lp-trust .check{display:inline-flex;align-items:center;gap:6px}
