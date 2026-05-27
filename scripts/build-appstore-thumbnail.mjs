@@ -87,10 +87,13 @@ for (const s of sources) {
 const CANVAS_W = 350;
 const CANVAS_H = 197;
 const GRID = 14;
-const HEADER_H = 36;
-const STAGE_TOP = HEADER_H;                       // 36
-const STAGE_BOTTOM = HEADER_H + 9 * GRID;         // 162
-const CAPTION_TOP = STAGE_BOTTOM;                 // 162
+// Whole stage shifted down by half a grid cell (7 px) for more
+// breathing room above the text and a tighter caption strip.
+const STAGE_NUDGE_DOWN = GRID / 2;                // 7
+const HEADER_H = 36 + STAGE_NUDGE_DOWN;           // 43
+const STAGE_TOP = HEADER_H;                       // 43
+const STAGE_BOTTOM = HEADER_H + 9 * GRID;         // 169
+const CAPTION_TOP = STAGE_BOTTOM;                 // 169
 // Logo geometry: square at translate(LOGO_PAD, LOGO_PAD) so the
 // distance from the top edge equals the distance from the left edge.
 const LOGO_SIZE = 18;
@@ -99,7 +102,7 @@ const LOGO_PAD = 9;
 // The two thicker "origin" axes meet exactly at this (start, baseline)
 // corner — i.e. at the 0,0 of the text frame.
 const TEXT_X = 56;                                // 4 cells from left edge
-const TEXT_BASELINE = 126;
+const TEXT_BASELINE = 126 + STAGE_NUDGE_DOWN;     // 133
 
 // === Extract curves + vertices ===
 console.log("Extracting glyph curves...");
