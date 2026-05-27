@@ -1,6 +1,7 @@
 // Google Fonts for Onshape — warm landing variant (orange → red).
 // Ported from /design/landing-page.jsx with theme="warm" baked in.
 
+import Image from "next/image";
 import { SiteShell } from "@/components/SiteShell";
 
 const C1 = "#F48635"; // orange
@@ -59,35 +60,9 @@ const css = `
 .lp-trust .check{display:inline-flex;align-items:center;gap:6px}
 .lp-trust .check svg{width:13px;height:13px;color:#22a06b}
 
-.lp-hero-vis{position:relative;background:#f5f7fa;border:1px solid #e3e7ec;
-  border-radius:10px;padding:18px;height:520px;overflow:hidden;
+.lp-hero-vis{position:relative;border:1px solid #e3e7ec;
+  border-radius:10px;overflow:hidden;
   box-shadow:0 24px 60px -20px rgba(15,30,60,.18),0 2px 6px rgba(15,30,60,.05)}
-.lp-vis-sketch{position:absolute;inset:18px 220px 18px 18px;
-  background:#fff;border:1px solid #e3e7ec;border-radius:6px;
-  background-image:
-    linear-gradient(#eef1f5 1px,transparent 1px),
-    linear-gradient(90deg,#eef1f5 1px,transparent 1px);
-  background-size:32px 32px;background-position:-1px -1px;
-  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px}
-.lp-vis-word{font-size:78px;font-weight:600;letter-spacing:-.03em;
-  font-family:"Helvetica Neue",Arial,sans-serif;
-  -webkit-text-stroke:1.2px var(--c1);color:transparent}
-.lp-vis-meta{font-family:"SFMono-Regular",Menlo,monospace;font-size:10.5px;
-  color:#94a0b0;letter-spacing:.04em}
-.lp-vis-panel{position:absolute;top:18px;right:18px;width:188px;bottom:18px;
-  background:#fff;border:1px solid #d6dbe2;border-radius:6px;padding:14px 12px;
-  display:flex;flex-direction:column;gap:10px;font-size:11px;color:#4a5260;
-  box-shadow:0 8px 24px rgba(15,30,60,.06)}
-.lp-vis-panel h4{margin:0;font-size:13px;color:#0f1216;font-weight:600;letter-spacing:-.005em}
-.lp-vis-pills{display:flex;flex-wrap:wrap;gap:4px}
-.lp-vis-pill{padding:3px 7px;border:1px solid #d6dbe2;border-radius:3px;
-  background:#fff;font-size:10px;color:#4a5260}
-.lp-vis-pill.on{background:var(--c1);color:#fff;border-color:var(--c1)}
-.lp-vis-row{padding:5px 8px;border:1px solid transparent;border-radius:3px;
-  display:flex;justify-content:space-between;align-items:baseline;font-size:11px}
-.lp-vis-row.on{background:rgba(var(--c1-rgb),.12);color:#a83611}
-.lp-vis-btn{padding:7px;background:var(--c1);color:#fff;text-align:center;
-  border-radius:3px;font-size:10.5px;font-weight:500;margin-top:auto}
 
 .lp-section{padding:80px 56px;max-width:1280px;margin:0 auto}
 .lp-section-h{display:flex;flex-direction:column;align-items:center;text-align:center;
@@ -234,42 +209,20 @@ export default function Home() {
           </div>
 
           <div className="lp-hero-vis">
-            <div className="lp-vis-sketch">
-              <div className="lp-vis-word">Hello</div>
-              <div className="lp-vis-meta">5 GLYPHS · 76 SEGMENTS · 4.5 KB</div>
-            </div>
-            <div className="lp-vis-panel">
-              <h4>Google Fonts</h4>
-              <div className="lp-vis-pills">
-                <span className="lp-vis-pill on">All</span>
-                <span className="lp-vis-pill">Sans</span>
-                <span className="lp-vis-pill">Mono</span>
-                <span className="lp-vis-pill">Serif</span>
-              </div>
-              <div
-                style={{
-                  borderTop: "1px solid #eceff3",
-                  paddingTop: 8,
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: 2,
-                }}
-              >
-                <div className="lp-vis-row">
-                  Roboto <span style={{ color: "#94a0b0" }}>Sans</span>
-                </div>
-                <div className="lp-vis-row">
-                  Inter <span style={{ color: "#94a0b0" }}>Sans</span>
-                </div>
-                <div className="lp-vis-row on" style={{ fontWeight: 600 }}>
-                  Poppins <span style={{ color: "#a83611" }}>Sans</span>
-                </div>
-                <div className="lp-vis-row">
-                  Lora <span style={{ color: "#94a0b0" }}>Serif</span>
-                </div>
-              </div>
-              <div className="lp-vis-btn">Insert into Part Studio</div>
-            </div>
+            <Image
+              src="/screenshots/panel.png"
+              alt="Google Fonts panel in Onshape — font picker with live sketch preview"
+              width={1480}
+              height={2368}
+              priority
+              sizes="(max-width: 960px) 100vw, 45vw"
+              style={{
+                width: "100%",
+                height: "auto",
+                display: "block",
+                borderRadius: 8,
+              }}
+            />
           </div>
         </header>
 
