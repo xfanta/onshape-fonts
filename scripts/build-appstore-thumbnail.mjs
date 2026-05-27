@@ -80,21 +80,25 @@ for (const s of sources) {
 }
 
 // === Layout ===
-// Grid step 14 px: divides 350 cleanly (25 cells across) AND lets us
-// build a stage area that's a whole number of cells tall. With
-// header = 28 (2 cells) and stage = 126 (9 cells), every visible
-// grid cell in the stage is a full square — no partial cells.
+// Stage uses 9 whole grid cells of 14 px = 126. Canvas height 197 −
+// stage 126 = 71 px for header + caption. Split as 36 + 35 (1 px
+// difference is visually indistinguishable; this is the closest we
+// can get with whole-cell stage AND fixed canvas dimensions).
 const CANVAS_W = 350;
 const CANVAS_H = 197;
 const GRID = 14;
-const HEADER_H = 28;                       // 2 cells
-const STAGE_TOP = HEADER_H;                // 28
-const STAGE_BOTTOM = HEADER_H + 9 * GRID;  // 154
-const CAPTION_TOP = STAGE_BOTTOM;          // 154
+const HEADER_H = 36;
+const STAGE_TOP = HEADER_H;                       // 36
+const STAGE_BOTTOM = HEADER_H + 9 * GRID;         // 162
+const CAPTION_TOP = STAGE_BOTTOM;                 // 162
+// Logo geometry: square at translate(LOGO_PAD, LOGO_PAD) so the
+// distance from the top edge equals the distance from the left edge.
+const LOGO_SIZE = 18;
+const LOGO_PAD = 9;
 // Text is LEFT-ALIGNED at TEXT_X with baseline at TEXT_BASELINE.
 // The two thicker "origin" axes meet exactly at this (start, baseline)
 // corner — i.e. at the 0,0 of the text frame.
-const TEXT_X = 56;                          // 4 cells from left edge
+const TEXT_X = 56;                                // 4 cells from left edge
 const TEXT_BASELINE = 126;
 
 // === Extract curves + vertices ===
@@ -164,13 +168,13 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${
 
   <!-- Header -->
   <g>
-    <g transform="translate(10, 5)">
-      <rect width="18" height="18" rx="4" ry="4" fill="url(#brand)"/>
+    <g transform="translate(${LOGO_PAD}, ${LOGO_PAD})">
+      <rect width="${LOGO_SIZE}" height="${LOGO_SIZE}" rx="4" ry="4" fill="url(#brand)"/>
       <g transform="translate(3, 3) scale(0.01875)" fill="#ffffff">
         <path d="${LOGO}"/>
       </g>
     </g>
-    <text x="34" y="18" xml:space="preserve"
+    <text x="${LOGO_PAD + LOGO_SIZE + 6}" y="${HEADER_H / 2 + 4}" xml:space="preserve"
           font-family="-apple-system, 'Helvetica Neue', Arial, sans-serif"
           font-weight="600" font-size="11.5" fill="#0f1216"
           >Google Fonts <tspan font-weight="400" fill="#94a0b0">for Onshape</tspan></text>
@@ -195,7 +199,7 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${CANVAS_W} ${
   <g>
     <rect x="0" y="${CAPTION_TOP}" width="${CANVAS_W}" height="${CANVAS_H - CAPTION_TOP}" fill="#ffffff"/>
     <line x1="0" y1="${CAPTION_TOP}" x2="${CANVAS_W}" y2="${CAPTION_TOP}" stroke="#eef1f5" stroke-width="0.7"/>
-    <text x="175" y="${CAPTION_TOP + 18}" text-anchor="middle" xml:space="preserve"
+    <text x="175" y="${CAPTION_TOP + (CANVAS_H - CAPTION_TOP) / 2 + 3}" text-anchor="middle" xml:space="preserve"
           font-family="-apple-system, 'SF Mono', Menlo, monospace"
           font-size="9" font-weight="500" letter-spacing="1.4" fill="#4a5260"
           >1,900+ GOOGLE FONTS <tspan fill="#94a0b0">or</tspan> CUSTOM .otf/.ttf FONT</text>
