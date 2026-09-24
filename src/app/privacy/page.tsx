@@ -78,7 +78,7 @@ export default function PrivacyPage() {
           server-side. We never see who you are, only aggregate counts.
           Details:{" "}
           <a
-            className="text-[#ed3338] underline"
+            className="text-[#C24A12] underline"
             href="https://vercel.com/docs/analytics/privacy-policy"
             target="_blank"
             rel="noreferrer"
@@ -125,7 +125,7 @@ export default function PrivacyPage() {
           Onshape (which revokes the token) or until you ask for deletion.
           To request manual deletion, open an issue at{" "}
           <a
-            className="text-[#ed3338] underline"
+            className="text-[#C24A12] underline"
             href="https://github.com/xfanta/onshape-fonts/issues"
             target="_blank"
             rel="noreferrer"
@@ -141,7 +141,7 @@ export default function PrivacyPage() {
         <p>
           Questions or concerns: open an issue or discussion on{" "}
           <a
-            className="text-[#ed3338] underline"
+            className="text-[#C24A12] underline"
             href="https://github.com/xfanta/onshape-fonts"
             target="_blank"
             rel="noreferrer"

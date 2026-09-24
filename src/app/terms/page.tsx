@@ -22,7 +22,7 @@ export default function TermsPage() {
           <strong>Google Fonts for Onshape</strong>  (&quot;the add-in&quot;)
           is an open-source project distributed free of charge.<br />Source code:{" "}
           <a
-            className="text-[#ed3338] underline"
+            className="text-[#C24A12] underline"
             href="https://github.com/xfanta/onshape-fonts"
             target="_blank"
             rel="noreferrer"
@@ -36,7 +36,7 @@ export default function TermsPage() {
         <p>
           Source code is available under the{" "}
           <a
-            className="text-[#ed3338] underline"
+            className="text-[#C24A12] underline"
             href="https://polyformproject.org/licenses/noncommercial/1.0.0/"
             target="_blank"
             rel="noreferrer"
@@ -51,7 +51,7 @@ export default function TermsPage() {
           <strong>not permitted</strong> under this license. The full
           text lives in{" "}
           <a
-            className="text-[#ed3338] underline"
+            className="text-[#C24A12] underline"
             href="https://github.com/xfanta/onshape-fonts/blob/main/LICENSE"
             target="_blank"
             rel="noreferrer"
@@ -82,7 +82,7 @@ export default function TermsPage() {
           The add-in talks to Onshape and Google Fonts. Your use of those
           services is governed by their own terms — see{" "}
           <a
-            className="text-[#ed3338] underline"
+            className="text-[#C24A12] underline"
             href="https://www.onshape.com/en/legal/terms-of-use"
             target="_blank"
             rel="noreferrer"
@@ -91,7 +91,7 @@ export default function TermsPage() {
           </a>{" "}
           and{" "}
           <a
-            className="text-[#ed3338] underline"
+            className="text-[#C24A12] underline"
             href="https://policies.google.com/terms"
             target="_blank"
             rel="noreferrer"
@@ -125,7 +125,7 @@ export default function TermsPage() {
         <p>
           Questions: open an issue or discussion on{" "}
           <a
-            className="text-[#ed3338] underline"
+            className="text-[#C24A12] underline"
             href="https://github.com/xfanta/onshape-fonts"
             target="_blank"
             rel="noreferrer"
