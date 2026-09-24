@@ -3,6 +3,7 @@ import { SiteShell } from "@/components/SiteShell";
 export const metadata = {
   title: "Terms — Google Fonts for Onshape",
   description: "Terms of use for the Google Fonts for Onshape add-in.",
+  alternates: { canonical: "/terms" },
 };
 
 export default function TermsPage() {

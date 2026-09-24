@@ -27,9 +27,27 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  title: "Google Fonts for Onshape",
+  metadataBase: new URL("https://onshape-fonts.vercel.app"),
+  title: "Google Fonts for Onshape — text as native sketch curves",
   description:
-    "Bring 1,900+ Google Fonts and your own .ttf/.otf files into Onshape. Pick a font, type your text, click Insert — the result lands on the active sketch plane as native curves you can resize, rotate, and reposition anytime.",
+    "Free Onshape add-in: 1,900+ Google Fonts or your own .ttf/.otf, inserted on the active sketch plane as native curves you can resize and move anytime.",
+  authors: [{ name: "Michal Fanta" }],
+  openGraph: {
+    type: "website",
+    siteName: "Google Fonts for Onshape",
+    title: "Google Fonts for Onshape — type that turns into real geometry",
+    description:
+      "Free Onshape add-in: 1,900+ Google Fonts or your own .ttf/.otf, inserted on the active sketch plane as native curves you can resize and move anytime.",
+    url: "/",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Google Fonts for Onshape — an Onshape add-in that inserts text in any Google Font as native sketch curves." }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Google Fonts for Onshape — type that turns into real geometry",
+    description:
+      "Free Onshape add-in: 1,900+ Google Fonts or your own .ttf/.otf, inserted on the active sketch plane as native curves you can resize and move anytime.",
+    images: ["/og.png"],
+  },
 };
 
 export default function RootLayout({

@@ -2,7 +2,10 @@
 // Ported from /design/landing-page.jsx with theme="warm" baked in.
 
 import Image from "next/image";
+import type { Metadata } from "next";
 import { SiteShell } from "@/components/SiteShell";
+
+export const metadata: Metadata = { alternates: { canonical: "/" } };
 
 const C1 = "#F48635"; // orange
 const C2 = "#ed3338"; // red

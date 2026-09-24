@@ -12,6 +12,8 @@ const nextConfig: NextConfig = {
             key: "Permissions-Policy",
             value: "local-fonts=(self)",
           },
+          // A response is what its Content-Type says, never sniffed.
+          { key: "X-Content-Type-Options", value: "nosniff" },
         ],
       },
     ];

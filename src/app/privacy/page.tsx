@@ -3,6 +3,7 @@ import { SiteShell } from "@/components/SiteShell";
 export const metadata = {
   title: "Privacy — Google Fonts for Onshape",
   description: "What data this Onshape add-in collects and how it's used.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {
