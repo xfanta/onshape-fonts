@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
@@ -11,6 +11,19 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
+});
+
+// Playfair Display, italic 500 only — the gradient emphasis word in each
+// hero. Through next/font rather than a Google Fonts <link>: self-hosted,
+// preloaded, and no render-blocking request to another origin (~750 ms on
+// a phone in Lighthouse). latin-ext carries Czech and the other accented
+// locales.
+const playfair = Playfair_Display({
+  variable: "--font-playfair",
+  subsets: ["latin", "latin-ext"],
+  style: "italic",
+  weight: "500",
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -27,7 +40,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
         {children}

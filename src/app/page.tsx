@@ -7,10 +7,14 @@ import { SiteShell } from "@/components/SiteShell";
 const C1 = "#F48635"; // orange
 const C2 = "#ed3338"; // red
 const C1_RGB = "244, 134, 53";
+// C1 darkened to 4.9:1 on white (4.7:1 on the cream band): every text and
+// solid button that used C1 sat at 2.5:1, under WCAG's 4.5:1. C1 stays for
+// dots, icons and the gradient.
+const C1_INK = "#C24A12";
 const GRADIENT = `linear-gradient(135deg, ${C1} 0%, ${C2} 100%)`;
 
 const css = `
-.lp{--c1:${C1};--c2:${C2};--c1-rgb:${C1_RGB};--grad:${GRADIENT};
+.lp{--c1:${C1};--c1-ink:${C1_INK};--c2:${C2};--c1-rgb:${C1_RGB};--grad:${GRADIENT};
   font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;color:#1a1d23;background:#fff;
   width:100%;font-size:15px;line-height:1.55;overflow-x:hidden}
 .lp *{box-sizing:border-box}
@@ -42,17 +46,17 @@ const css = `
 .lp-h1{font-size:54px;line-height:1.05;letter-spacing:-.025em;font-weight:600;
   margin:0 0 22px;color:#0f1216;text-wrap:balance}
 @media (max-width:600px){.lp-h1{font-size:40px}}
-.lp-h1 em{font-style:italic;font-family:"Playfair Display","Times New Roman",serif;
+.lp-h1 em{font-style:italic;font-family:var(--font-playfair),"Playfair Display","Times New Roman",serif;
   font-weight:500;background:var(--grad);-webkit-background-clip:text;
   background-clip:text;color:transparent}
 .lp-lead{font-size:18px;line-height:1.55;color:#4a5260;margin:0 0 32px;max-width:520px}
 .lp-ctas{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
 .lp-cta{padding:13px 22px;font-size:14.5px;font-weight:500;border-radius:6px;
-  cursor:pointer;border:1px solid var(--c1);background:var(--c1);color:#fff;
+  cursor:pointer;border:1px solid var(--c1-ink);background:var(--c1-ink);color:#fff;
   display:inline-flex;align-items:center;gap:9px;letter-spacing:.005em;
   transition:filter .12s,box-shadow .12s;text-decoration:none}
 .lp-cta:hover{filter:brightness(.96);box-shadow:0 6px 18px rgba(var(--c1-rgb),.30)}
-.lp-cta.alt{background:transparent;color:var(--c1);border-color:var(--c1)}
+.lp-cta.alt{background:transparent;color:var(--c1-ink);border-color:var(--c1-ink)}
 .lp-cta.alt:hover{background:rgba(var(--c1-rgb),.08);box-shadow:none;filter:none}
 .lp-cta svg{width:15px;height:15px}
 /* On phones stretch the hero CTAs to fill the column width so the
@@ -75,7 +79,7 @@ const css = `
 .lp-section-h{display:flex;flex-direction:column;align-items:center;text-align:center;
   gap:14px;margin-bottom:56px}
 .lp-section-eyebrow{font-size:12px;font-weight:600;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--c1)}
+  text-transform:uppercase;color:var(--c1-ink)}
 .lp-section-h h2{font-size:38px;line-height:1.1;letter-spacing:-.02em;font-weight:600;
   margin:0;color:#0f1216;max-width:680px;text-wrap:balance}
 .lp-section-h p{font-size:17px;color:#4a5260;margin:0;max-width:560px;line-height:1.55}
@@ -125,11 +129,6 @@ const css = `
 export default function Home() {
   return (
     <>
-      {/* eslint-disable-next-line @next/next/no-css-tags */}
-      <link
-        href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,500&display=swap"
-        rel="stylesheet"
-      />
       <SiteShell>
       <div className="lp">
         <style dangerouslySetInnerHTML={{ __html: css }} />
@@ -151,6 +150,8 @@ export default function Home() {
                 inside to keep cycling. */}
             <img
               src="/landing-hero-animated.svg"
+              width={350}
+              height={126}
               alt="Hello rendered as native sketch curves in four different fonts (Playfair, Lobster, Roboto, JetBrains Mono)"
               className="lp-hero-anim"
             />
@@ -358,7 +359,7 @@ export default function Home() {
                     href="https://donate.stripe.com/8x2dRafZtcY6fJI6Mj57W01"
                     target="_blank"
                     rel="noreferrer"
-                    style={{ color: "#ed3338", textDecoration: "underline" }}
+                    style={{ color: "#C8262B", textDecoration: "underline" }}
                   >
                     Buy me a coffee →
                   </a>
