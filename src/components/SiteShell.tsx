@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { FamilyFooter } from "./FamilyFooter";
+import { useFamily } from "./FamilyProvider";
 
 /** Sticky header + footer with a max-w-7xl content rail. Pages render
  *  their body inside; the footer self-pushes to the viewport bottom
@@ -160,8 +162,10 @@ function SiteHeader() {
 }
 
 function SiteFooter() {
+  const family = useFamily();
   return (
     <footer className="mt-auto border-t border-gray-200">
+      <FamilyFooter family={family} locale={"en"} current="onshape-fonts" />
       <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-6 py-6 text-xs text-gray-500">
         <span>© 2026 · Free &amp; open source</span>
         <div className="flex gap-5">
