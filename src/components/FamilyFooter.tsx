@@ -4,30 +4,35 @@ import { pick, type Family, type FamilyGlyph } from "@/lib/family";
  *  listed xfanta app, grouped (2D & 3D graphics, disk tools, Onshape
  *  add-ins, more), each with its mark and a few words. The app this site is
  *  about is shown but not linked. No hooks, so it renders from a server or a
- *  client shell alike. Same file in every product site. */
+ *  client shell alike. Same file in every product site.
+ *
+ *  Colours come from CSS variables with the family's light values as the
+ *  fallback, so a site with its own palette (Defragment's themes) sets
+ *  --family-bg, --family-line, --family-text and --family-muted on its
+ *  footer and changes nothing here. */
 export function FamilyFooter({ family, locale, current }: { family: Family | null; locale: string; current: string }) {
   if (!family?.categories.length) return null;
   return (
-    <div className="border-b border-gray-100 bg-[#fcfcfd]">
+    <div className="border-b border-[color:var(--family-line,#f3f4f6)] bg-[var(--family-bg,#fcfcfd)]">
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
-          <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-gray-500">{pick(family.heading, locale)}</h2>
-          <a href={family.hub.url} className="text-xs text-gray-500 hover:text-gray-900">
+          <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--family-muted,#6b7280)]">{pick(family.heading, locale)}</h2>
+          <a href={family.hub.url} className="text-xs text-[color:var(--family-muted,#6b7280)] hover:text-[color:var(--family-text,#111827)]">
             {pick(family.hub.label, locale)} →
           </a>
         </div>
         <div className="mt-5 grid gap-x-10 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
           {family.categories.map((c) => (
             <section key={c.id}>
-              <h3 className="text-xs font-medium text-gray-900">{pick(c.label, locale)}</h3>
+              <h3 className="text-xs font-medium text-[color:var(--family-text,#111827)]">{pick(c.label, locale)}</h3>
               <ul className="mt-3 flex flex-col gap-3">
                 {c.apps.map((a) => {
                   const body = (
                     <>
                       <Mark glyph={a.glyph} />
                       <span className="min-w-0">
-                        <span className="block text-[13px] font-medium leading-tight text-gray-800 group-hover:text-gray-950 group-hover:underline">{a.name}</span>
-                        <span className="block text-xs leading-snug text-gray-500">{pick(a.blurb, locale)}</span>
+                        <span className="block text-[13px] font-medium leading-tight text-[color:var(--family-text,#1f2937)] group-hover:underline">{a.name}</span>
+                        <span className="block text-xs leading-snug text-[color:var(--family-muted,#6b7280)]">{pick(a.blurb, locale)}</span>
                       </span>
                     </>
                   );
