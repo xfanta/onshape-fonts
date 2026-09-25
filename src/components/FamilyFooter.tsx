@@ -39,11 +39,11 @@ export function FamilyFooter({ family, locale, current }: { family: Family | nul
                   return (
                     <li key={a.id}>
                       {a.id === current ? (
-                        <span className="flex items-start gap-2.5" aria-current="page">
+                        <span className="flex items-center gap-3" aria-current="page">
                           {body}
                         </span>
                       ) : (
-                        <a href={a.url} className="group flex items-start gap-2.5">
+                        <a href={a.url} className="group flex items-center gap-3">
                           {body}
                         </a>
                       )}
@@ -59,12 +59,13 @@ export function FamilyFooter({ family, locale, current }: { family: Family | nul
   );
 }
 
-/** The app's mark: the family's gradient tile with its white glyph. */
+/** The app's mark: the family's gradient tile with its white glyph, as tall
+ *  as the two lines beside it (name and blurb). */
 function Mark({ glyph }: { glyph: FamilyGlyph }) {
   return (
     <span
       aria-hidden
-      className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-[5px] p-[3px]"
+      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[7px] p-[6px]"
       style={{ background: "linear-gradient(135deg, #F48635 0%, #ed3338 100%)" }}
     >
       <svg
