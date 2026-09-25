@@ -175,6 +175,9 @@ function SiteFooter() {
           <Link href="/terms" className="hover:text-gray-900">
             Terms
           </Link>
+          <a href="mailto:apps@xfanta.com" className="hover:text-gray-900">
+            Contact
+          </a>
           <a
             href={DONATE_URL}
             target="_blank"

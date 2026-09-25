@@ -123,7 +123,7 @@ export default function TermsPage() {
           Contact
         </h2>
         <p>
-          Questions: open an issue or discussion on{" "}
+          Questions: write to <a className="text-[#C24A12] underline" href="mailto:apps@xfanta.com">apps@xfanta.com</a>, or open an issue or discussion on{" "}
           <a
             className="text-[#C24A12] underline"
             href="https://github.com/xfanta/onshape-fonts"

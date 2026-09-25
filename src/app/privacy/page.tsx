@@ -139,7 +139,7 @@ export default function PrivacyPage() {
           Contact
         </h2>
         <p>
-          Questions or concerns: open an issue or discussion on{" "}
+          Questions or concerns: write to <a className="text-[#C24A12] underline" href="mailto:apps@xfanta.com">apps@xfanta.com</a>, or open an issue or discussion on{" "}
           <a
             className="text-[#C24A12] underline"
             href="https://github.com/xfanta/onshape-fonts"
