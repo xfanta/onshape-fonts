@@ -12,6 +12,8 @@ export interface FamilyGlyph {
   mode: "stroke" | "fill";
   paths: string[];
   strokeWidth?: number;
+  /** An icon of the app's own, drawn instead of the glyph (full URL). */
+  image?: string;
 }
 
 export interface Family {
@@ -25,7 +27,10 @@ export interface Family {
   }[];
 }
 
-export const FAMILY_URL = "https://apps.xfanta.com/family.json";
+// The query is part of the fetch cache's key. Vercel keeps that cache across
+// deployments, so a redeploy alone can serve yesterday's list for up to a
+// day; bumping `v` makes the next build fetch it fresh.
+export const FAMILY_URL = "https://apps.xfanta.com/family.json?v=2";
 
 /** Null when apps.xfanta.com cannot be reached — the page then renders
  *  without the block rather than failing, and the next daily revalidation

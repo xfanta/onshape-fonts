@@ -62,6 +62,13 @@ export function FamilyFooter({ family, locale, current }: { family: Family | nul
 /** The app's mark: the family's gradient tile with its white glyph, as tall
  *  as the two lines beside it (name and blurb). */
 function Mark({ glyph }: { glyph: FamilyGlyph }) {
+  // An app whose icon is not the family tile (Defragment) brings its own.
+  if (glyph.image) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- a tiny SVG icon; nothing to optimise
+      <img src={glyph.image} alt="" aria-hidden width={32} height={32} className="h-8 w-8 shrink-0 rounded-[7px]" />
+    );
+  }
   return (
     <span
       aria-hidden
