@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-const SITE = "https://onshape-fonts.vercel.app";
+const SITE = "https://onshape-fonts.xfanta.com";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const at = new Date("2026-09-24");

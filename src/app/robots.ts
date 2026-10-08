@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
         (userAgent) => ({ userAgent, allow: "/", disallow }),
       ),
     ],
-    sitemap: "https://onshape-fonts.vercel.app/sitemap.xml",
-    host: "https://onshape-fonts.vercel.app",
+    sitemap: "https://onshape-fonts.xfanta.com/sitemap.xml",
+    host: "https://onshape-fonts.xfanta.com",
   };
 }

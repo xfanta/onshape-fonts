@@ -29,7 +29,7 @@ const playfair = Playfair_Display({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://onshape-fonts.vercel.app"),
+  metadataBase: new URL("https://onshape-fonts.xfanta.com"),
   title: "Google Fonts for Onshape — text as native sketch curves",
   description:
     "Free Onshape add-in: 1,900+ Google Fonts or your own .ttf/.otf, inserted on the active sketch plane as native curves you can resize and move anytime.",
