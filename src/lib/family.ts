@@ -20,17 +20,21 @@ export interface Family {
   version: 1;
   heading: Localized;
   hub: { url: string; label: Localized };
+  /** More links beside the hub's (the blog), each with a URL per locale. */
+  links?: { url: Localized; label: Localized }[];
+  /** The pill beside an app that is not out yet. */
+  soonLabel?: Localized;
   categories: {
     id: string;
     label: Localized;
-    apps: { id: string; name: string; url: string; blurb: Localized; glyph: FamilyGlyph }[];
+    apps: { id: string; name: string; url: string; blurb: Localized; glyph: FamilyGlyph; soon?: boolean }[];
   }[];
 }
 
 // The query is part of the fetch cache's key. Vercel keeps that cache across
 // deployments, so a redeploy alone can serve yesterday's list for up to a
 // day; bumping `v` makes the next build fetch it fresh.
-export const FAMILY_URL = "https://apps.xfanta.com/family.json?v=3";
+export const FAMILY_URL = "https://apps.xfanta.com/family.json?v=4";
 
 /** Null when apps.xfanta.com cannot be reached — the page then renders
  *  without the block rather than failing, and the next daily revalidation

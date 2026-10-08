@@ -2,9 +2,11 @@ import { pick, type Family, type FamilyGlyph } from "@/lib/family";
 
 /** The shared "more apps by xfanta" band at the top of the footer: every
  *  listed xfanta app, grouped (2D & 3D graphics, disk tools, Onshape
- *  add-ins, more), each with its mark and a few words. The app this site is
- *  about is shown but not linked. No hooks, so it renders from a server or a
- *  client shell alike. Same file in every product site.
+ *  add-ins, more), each with its mark and a few words, plus one about to
+ *  ship, marked "coming soon". Above them, links to the blog and to all
+ *  apps. The app this site is about is shown but not linked. No hooks, so it
+ *  renders from a server or a client shell alike. Same file in every product
+ *  site.
  *
  *  Colours come from CSS variables with the family's light values as the
  *  fallback, so a site with its own palette (Defragment's themes) sets
@@ -17,9 +19,16 @@ export function FamilyFooter({ family, locale, current }: { family: Family | nul
       <div className="mx-auto max-w-7xl px-6 py-8">
         <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1">
           <h2 className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[color:var(--family-muted,#6b7280)]">{pick(family.heading, locale)}</h2>
-          <a href={family.hub.url} className="text-xs text-[color:var(--family-muted,#6b7280)] hover:text-[color:var(--family-text,#111827)]">
-            {pick(family.hub.label, locale)} →
-          </a>
+          <div className="flex flex-wrap gap-x-5 gap-y-1">
+            {family.links?.map((l) => (
+              <a key={l.url.en} href={pick(l.url, locale)} className="text-xs text-[color:var(--family-muted,#6b7280)] hover:text-[color:var(--family-text,#111827)]">
+                {pick(l.label, locale)} →
+              </a>
+            ))}
+            <a href={family.hub.url} className="text-xs text-[color:var(--family-muted,#6b7280)] hover:text-[color:var(--family-text,#111827)]">
+              {pick(family.hub.label, locale)} →
+            </a>
+          </div>
         </div>
         <div className="mt-5 grid gap-x-10 gap-y-7 sm:grid-cols-2 lg:grid-cols-4">
           {family.categories.map((c) => (
@@ -31,7 +40,14 @@ export function FamilyFooter({ family, locale, current }: { family: Family | nul
                     <>
                       <Mark glyph={a.glyph} />
                       <span className="min-w-0">
-                        <span className="block text-[13px] font-medium leading-tight text-[color:var(--family-text,#1f2937)] group-hover:underline">{a.name}</span>
+                        <span className="block text-[13px] font-medium leading-tight text-[color:var(--family-text,#1f2937)]">
+                          <span className="group-hover:underline">{a.name}</span>
+                          {a.soon && family.soonLabel && (
+                            <span className="ml-1.5 whitespace-nowrap rounded-full border border-[color:var(--family-line,#e5e7eb)] px-1.5 py-px align-[1px] text-[10px] font-medium text-[color:var(--family-muted,#6b7280)]">
+                              {pick(family.soonLabel, locale)}
+                            </span>
+                          )}
+                        </span>
                         <span className="block text-xs leading-snug text-[color:var(--family-muted,#6b7280)]">{pick(a.blurb, locale)}</span>
                       </span>
                     </>
